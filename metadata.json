@@ -1,0 +1,6 @@
+{
+  "name": "Opportunity Engine",
+  "description": "AI-powered B2B Business Opportunity Engine. Find businesses that have a genuine reason to buy what you sell through verifiable digital presence signals, explainable opportunity analysis, and tailored outreach.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
