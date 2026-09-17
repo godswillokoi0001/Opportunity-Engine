@@ -252,7 +252,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div
                     key={biz.id}
                     onClick={() => onSelectBusiness(biz)}
-                    className="card p-6 hover:shadow-md transition-all cursor-pointer group space-y-4 w-full min-w-0"
+                    className="card card-interactive p-6 group space-y-4 w-full min-w-0"
                   >
                     {/* Top Row: Title, Badges & Match Score */}
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 w-full min-w-0">

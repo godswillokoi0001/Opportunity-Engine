@@ -130,7 +130,7 @@ export const LiveAuditorView: React.FC<LiveAuditorViewProps> = ({ onAuditUrl }) 
 
       {/* Results Section */}
       {result && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-slide-up">
 
           {/* Overall Health Score Card */}
           <div className="card p-6 sm:p-8">
@@ -146,7 +146,7 @@ export const LiveAuditorView: React.FC<LiveAuditorViewProps> = ({ onAuditUrl }) 
 
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                  <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
                     {result.deterministicHealthScore}/100
                   </div>
                   <div className="text-xs text-[var(--text-muted)] font-medium">Digital Health Score</div>
@@ -158,7 +158,7 @@ export const LiveAuditorView: React.FC<LiveAuditorViewProps> = ({ onAuditUrl }) 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
               
               <div className="card-inner p-4 text-center">
-                <Smartphone className="w-5 h-5 mx-auto mb-2 text-amber-600 dark:text-amber-400" />
+                <Smartphone className="w-5 h-5 mx-auto mb-2 text-amber-700 dark:text-amber-400" />
                 <span className="text-xs text-[var(--text-muted)] block mb-1">Mobile Viewport</span>
                 <span className={`text-sm font-bold ${result.hasViewport ? 'text-teal-600' : 'text-rose-500'}`}>
                   {result.hasViewport ? '✓ Responsive' : '✕ Missing Viewport'}

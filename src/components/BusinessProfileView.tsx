@@ -93,12 +93,12 @@ export const BusinessProfileView: React.FC<BusinessProfileViewProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch justify-end bg-slate-900/50 backdrop-blur-xs transition-opacity"
+      className="fixed inset-0 z-50 flex items-stretch justify-end bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* ── Slide-in Drawer (Spacious & Modern) ─────────────────────────── */}
       <div
-        className="dossier-panel open w-full max-w-2xl bg-[var(--surface-1)] border-l border-[var(--border-subtle)] flex flex-col h-full shadow-2xl overflow-hidden"
+        className="w-full max-w-2xl bg-[var(--surface-1)] border-l border-[var(--border-subtle)] flex flex-col h-full shadow-2xl overflow-hidden animate-slide-left"
       >
 
         {/* ── Header ────────────────────────────────────────────────────── */}

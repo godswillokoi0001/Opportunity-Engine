@@ -78,11 +78,11 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-fade-in"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="card w-full max-w-xl p-6 sm:p-8 relative my-8 shadow-2xl space-y-6"
+        className="card w-full max-w-xl p-6 sm:p-8 relative my-8 shadow-2xl space-y-6 animate-scale-up"
         onClick={e => e.stopPropagation()}
       >
         <button
@@ -94,7 +94,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
 
         {/* Header */}
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">
             <Compass className="w-3.5 h-3.5" />
             <span>Targeting Setup</span>
           </div>

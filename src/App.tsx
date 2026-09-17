@@ -313,78 +313,79 @@ export default function App() {
 
       {/* Main View Area */}
       <main className="flex-1 w-full min-w-0">
-        {currentView === 'landing' ? (
-          <LandingPage
-            onGetStarted={() => {
-              setCurrentView('dashboard');
-              setIsNewCampaignOpen(true);
-            }}
-            onExploreDemo={() => {
-              setCurrentView('discovery');
-            }}
-          />
-        ) : (
-          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0">
-            {currentView === 'dashboard' && (
-              <DashboardView
-                campaigns={campaigns}
-                businesses={businesses}
-                savedLeadsCount={savedCount}
-                activityLogs={activityLogs}
-                userProfile={userProfile}
-                onNavigate={setCurrentView}
-                onSelectBusiness={setSelectedBusiness}
-                onNewCampaign={() => setIsNewCampaignOpen(true)}
-              />
-            )}
+        <div key={currentView} className="animate-slide-up w-full min-w-0">
+          {currentView === 'landing' ? (
+            <LandingPage
+              onGetStarted={() => {
+                setCurrentView('dashboard');
+                setIsNewCampaignOpen(true);
+              }}
+              onExploreDemo={() => {
+                setCurrentView('discovery');
+              }}
+            />
+          ) : (
+            <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0">
+              {currentView === 'dashboard' && (
+                <DashboardView
+                  campaigns={campaigns}
+                  businesses={businesses}
+                  savedLeadsCount={savedCount}
+                  activityLogs={activityLogs}
+                  userProfile={userProfile}
+                  onNavigate={setCurrentView}
+                  onSelectBusiness={setSelectedBusiness}
+                  onNewCampaign={() => setIsNewCampaignOpen(true)}
+                />
+              )}
 
-            {currentView === 'campaigns' && (
-              <CampaignsView
-                campaigns={campaigns}
-                onNewCampaign={() => setIsNewCampaignOpen(true)}
-                onRunCampaign={handleRunCampaign}
-                onSelectCampaign={() => setCurrentView('discovery')}
-              />
-            )}
+              {currentView === 'campaigns' && (
+                <CampaignsView
+                  campaigns={campaigns}
+                  onNewCampaign={() => setIsNewCampaignOpen(true)}
+                  onRunCampaign={handleRunCampaign}
+                  onSelectCampaign={() => setCurrentView('discovery')}
+                />
+              )}
 
-            {currentView === 'discovery' && (
-              <DiscoveryView
-                businesses={businesses}
-                onSelectBusiness={setSelectedBusiness}
-                onSaveLead={handleSaveLead}
-                onRunAudit={handleRunAuditOnBusiness}
-                onOpenOutreach={setOutreachBusiness}
-                onRefreshDiscovery={async () => {
-                  if (activeCampaign) await handleRunCampaign(activeCampaign.id);
-                }}
-              />
-            )}
+              {currentView === 'discovery' && (
+                <DiscoveryView
+                  businesses={businesses}
+                  onSelectBusiness={setSelectedBusiness}
+                  onSaveLead={handleSaveLead}
+                  onRunAudit={handleRunAuditOnBusiness}
+                  onOpenOutreach={setOutreachBusiness}
+                  onRefreshDiscovery={async () => {
+                    if (activeCampaign) await handleRunCampaign(activeCampaign.id);
+                  }}
+                />
+              )}
 
-            {currentView === 'leads' && (
-              <SavedLeadsView
-                savedBusinesses={businesses.filter(b => Boolean(b.savedLead))}
-                onSelectBusiness={setSelectedBusiness}
-                onUpdateLeadStatus={handleUpdateLeadStatus}
-                onAddNote={handleAddNote}
-                onOpenOutreach={setOutreachBusiness}
-              />
-            )}
+              {currentView === 'leads' && (
+                <SavedLeadsView
+                  savedBusinesses={businesses.filter(b => Boolean(b.savedLead))}
+                  onSelectBusiness={setSelectedBusiness}
+                  onUpdateLeadStatus={handleUpdateLeadStatus}
+                  onAddNote={handleAddNote}
+                  onOpenOutreach={setOutreachBusiness}
+                />
+              )}
 
+              {currentView === 'auditor' && (
+                <LiveAuditorView
+                  onAuditUrl={handleRunLiveAudit}
+                />
+              )}
 
-            {currentView === 'auditor' && (
-              <LiveAuditorView
-                onAuditUrl={handleRunLiveAudit}
-              />
-            )}
-
-            {currentView === 'settings' && (
-              <SettingsView
-                userProfile={userProfile}
-                onSaveProfile={handleSaveProfile}
-              />
-            )}
-          </div>
-        )}
+              {currentView === 'settings' && (
+                <SettingsView
+                  userProfile={userProfile}
+                  onSaveProfile={handleSaveProfile}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Campaign Creation Modal */}

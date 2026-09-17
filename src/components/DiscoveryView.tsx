@@ -184,7 +184,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
               <div
                 key={biz.id}
                 onClick={() => onSelectBusiness(biz)}
-                className="card p-6 hover:shadow-md transition-all cursor-pointer group"
+                className="card card-interactive p-6 group"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
 

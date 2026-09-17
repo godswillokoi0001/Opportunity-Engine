@@ -74,11 +74,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-fade-in"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="card w-full max-w-lg p-6 sm:p-8 relative my-8 shadow-2xl space-y-6"
+        className="card w-full max-w-lg p-6 sm:p-8 relative my-8 shadow-2xl space-y-6 animate-scale-up"
         onClick={e => e.stopPropagation()}
       >
         <button

@@ -174,16 +174,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
               aria-label="Toggle theme"
-              className="w-9 h-9 rounded-lg flex items-center justify-center border transition-all cursor-pointer hover:bg-[var(--surface-2)] shrink-0"
+              className="w-9 h-9 rounded-lg flex items-center justify-center border transition-all duration-200 cursor-pointer hover:bg-[var(--surface-2)] active:scale-95 shrink-0 group"
               style={{
                 borderColor: 'var(--border-moderate)',
                 color: 'var(--text-secondary)',
               }}
             >
               {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
+                <Sun className="w-4 h-4 text-amber-400 transition-transform duration-300 group-hover:rotate-45" />
               ) : (
-                <Moon className="w-4 h-4 text-slate-700" />
+                <Moon className="w-4 h-4 text-slate-700 transition-transform duration-300 group-hover:-rotate-12" />
               )}
             </button>
 
@@ -247,7 +247,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             background: 'var(--surface-1)',
             borderTop: '1px solid var(--border-subtle)',
           }}
-          className="md:hidden border-b shadow-lg transition-all"
+          className="md:hidden border-b shadow-lg animate-slide-down"
         >
           <div className="px-4 py-3 space-y-1">
             
