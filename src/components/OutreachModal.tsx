@@ -7,6 +7,8 @@ import {
   Download,
   RefreshCw,
   Mail,
+  Send,
+  Zap,
 } from 'lucide-react';
 import { Business, OutreachGeneration, UserProfile } from '../types.js';
 
@@ -78,166 +80,172 @@ export const OutreachModal: React.FC<OutreachModalProps> = ({
   };
 
   const ANGLES = [
-    { id: 'problem_solution', title: 'Problem-first', desc: 'Opens with the specific verified finding — mobile viewport missing, no CTA, etc.' },
-    { id: 'value_audit', title: 'Benchmark case', desc: 'Presents industry benchmarks and where this company falls short.' },
-    { id: 'consultative_inquiry', title: 'Executive inquiry', desc: 'Peer-level tone, light on specifics, designed to start a conversation.' },
-  ];
+    {
+      id: 'problem_solution',
+      title: 'Problem & Solution',
+      desc: 'Cites specific flaws found (e.g. mobile breakage) & offers rapid turnaround.'
+    },
+    {
+      id: 'value_audit',
+      title: 'Industry Benchmark',
+      desc: 'Shows how competitors outrank them and quantifies potential lost revenue.'
+    },
+    {
+      id: 'consultative_inquiry',
+      title: 'Consultative Inquiry',
+      desc: 'Polite, peer-to-peer executive inquiry asking about digital growth goals.'
+    },
+  ] as const;
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', padding: '16px', overflowY: 'auto' }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        style={{
-          background: 'var(--surface-1)',
-          border: '1px solid var(--border-moderate)',
-          borderRadius: '6px',
-          maxWidth: '660px',
-          width: '100%',
-          padding: '28px',
-          position: 'relative',
-          margin: 'auto',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
+        className="card w-full max-w-2xl p-6 sm:p-8 relative my-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-          <X style={{ width: '18px', height: '18px' }} />
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <Sparkles style={{ width: '13px', height: '13px', color: 'var(--amber)' }} />
-          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--amber)' }}>Outreach generator</span>
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Evidence Outreach Pitch</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+            Tailored Pitch for {business.name}
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            This pitch references the exact flaws detected during the technical audit of their digital presence.
+          </p>
         </div>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
-          Pitch for {business.name}
-        </h2>
-        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.6 }}>
-          Grounded in verifiable findings from the technical audit — not generic templates.
-        </p>
 
-        {/* Angle selector — no uniform SaaS card kit, just clear option buttons */}
-        <div style={{ marginBottom: '16px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Pitch angle</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {/* Angle Selection Cards */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+            Select Outreach Angle
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {ANGLES.map(a => {
-              const isActive = angle === a.id;
+              const isSelected = angle === a.id;
               return (
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => setAngle(a.id as any)}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: '4px',
-                    border: '1px solid',
-                    borderColor: isActive ? 'var(--amber-border)' : 'var(--border-moderate)',
-                    background: isActive ? 'var(--amber-surface)' : 'transparent',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 120ms ease',
-                  }}
+                  onClick={() => setAngle(a.id)}
+                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-amber-600 bg-amber-50/50 dark:bg-amber-950/30 dark:border-amber-500 text-[var(--text-primary)] shadow-xs'
+                      : 'border-[var(--border-moderate)] hover:bg-[var(--surface-2)] text-[var(--text-secondary)]'
+                  }`}
                 >
-                  <p style={{ fontSize: '12px', fontWeight: 600, color: isActive ? 'var(--amber-bright)' : 'var(--text-primary)', marginBottom: '4px' }}>{a.title}</p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{a.desc}</p>
+                  <p className="text-sm font-bold mb-1 text-[var(--text-primary)]">
+                    {a.title}
+                  </p>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                    {a.desc}
+                  </p>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Tone + generate */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            flexWrap: 'wrap',
-            padding: '12px 14px',
-            background: 'var(--surface-2)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '4px',
-            marginBottom: '20px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>Tone:</span>
-            <div style={{ display: 'flex', border: '1px solid var(--border-moderate)', borderRadius: '3px', overflow: 'hidden' }}>
+        {/* Tone & Generate Button Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[var(--surface-2)] border border-[var(--border-subtle)]">
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[var(--text-secondary)]">Tone:</span>
+            <div className="flex rounded-lg border border-[var(--border-moderate)] bg-[var(--surface-1)] p-0.5">
               {(['consultative', 'direct', 'professional'] as const).map(t => (
                 <button
                   key={t}
                   onClick={() => setTone(t)}
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: tone === t ? 600 : 400,
-                    padding: '5px 10px',
-                    background: tone === t ? 'var(--amber-surface)' : 'transparent',
-                    color: tone === t ? 'var(--amber-bright)' : 'var(--text-secondary)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    textTransform: 'capitalize',
-                    transition: 'all 100ms ease',
-                    borderRight: t !== 'professional' ? '1px solid var(--border-subtle)' : 'none',
-                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-medium capitalize cursor-pointer transition-colors ${
+                    tone === t
+                      ? 'bg-amber-600 text-white font-bold'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
                 >
                   {t}
                 </button>
               ))}
             </div>
           </div>
-          <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary" style={{ fontSize: '12px' }}>
-            <RefreshCw style={{ width: '12px', height: '12px', animation: isGenerating ? 'spin 1s linear infinite' : 'none' }} />
-            {isGenerating ? 'Synthesising with Gemini…' : body ? 'Regenerate draft' : 'Generate pitch draft'}
+
+          <button
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="btn-primary text-xs cursor-pointer justify-center"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+            <span>{isGenerating ? 'Generating Pitch with Gemini...' : body ? 'Regenerate Pitch' : 'Generate Tailored Email'}</span>
           </button>
+
         </div>
 
-        {/* Output */}
+        {/* Email Draft Output Area */}
         {body ? (
-          <div className="space-y-4">
-            {/* Subject */}
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Subject line</label>
-              <input type="text" value={subject} onChange={e => setSubject(e.target.value)} className="field-input" style={{ fontWeight: 600 }} />
+          <div className="space-y-4 pt-2">
+            
+            {/* Subject Line */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Subject Line
+              </label>
+              <input
+                type="text"
+                value={subject}
+                onChange={e => setSubject(e.target.value)}
+                className="field-input font-medium"
+              />
             </div>
 
             {/* Body */}
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Message body (editable)</label>
-              <textarea rows={7} value={body} onChange={e => setBody(e.target.value)} className="field-input" style={{ resize: 'vertical', lineHeight: 1.65 }} />
+            <div className="space-y-1">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Email Message (Editable)
+              </label>
+              <textarea
+                rows={7}
+                value={body}
+                onChange={e => setBody(e.target.value)}
+                className="field-input text-sm leading-relaxed"
+              />
             </div>
 
             {/* CTA */}
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Call to action</label>
-              <input type="text" value={callToAction} onChange={e => setCallToAction(e.target.value)} className="field-input" />
+            <div className="space-y-1">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Call to Action
+              </label>
+              <input
+                type="text"
+                value={callToAction}
+                onChange={e => setCallToAction(e.target.value)}
+                className="field-input font-medium text-xs"
+              />
             </div>
 
             {/* Evidence footprint */}
             {referencedEvidence.length > 0 && (
-              <div style={{ padding: '12px 14px', background: 'var(--teal-surface)', border: '1px solid var(--teal-border)', borderRadius: '4px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, color: 'var(--teal-bright)', marginBottom: '8px' }}>
-                  Findings cited in this message
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              <div className="p-3.5 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-900/50">
+                <span className="text-xs font-bold text-teal-800 dark:text-teal-300 block mb-2">
+                  ✓ Verified Digital Evidence Cited in This Message
+                </span>
+                <div className="flex flex-wrap gap-1.5">
                   {referencedEvidence.map((ev, i) => (
                     <span
                       key={i}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '11px',
-                        color: 'var(--teal-bright)',
-                        background: 'var(--ground)',
-                        border: '1px solid var(--teal-border)',
-                        padding: '3px 8px',
-                        borderRadius: '3px',
-                      }}
+                      className="badge badge-teal text-[11px]"
                     >
-                      <Check style={{ width: '10px', height: '10px' }} />
                       {ev}
                     </span>
                   ))}
@@ -245,41 +253,43 @@ export const OutreachModal: React.FC<OutreachModalProps> = ({
               </div>
             )}
 
-            {/* Actions */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {business.email || 'Public inquiry channel'}
-              </span>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleDownload} className="btn-secondary" style={{ fontSize: '12px' }}>
-                  <Download style={{ width: '12px', height: '12px' }} />
-                  Export .txt
+            {/* Actions Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--border-subtle)]">
+              <div className="text-xs text-[var(--text-muted)]">
+                Recipient: <strong className="text-[var(--text-primary)] font-mono">{business.email || 'Public contact channel'}</strong>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownload}
+                  className="btn-secondary text-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export .txt</span>
                 </button>
-                <button onClick={handleCopy} className="btn-primary" style={{ fontSize: '12px' }}>
-                  {copied ? <Check style={{ width: '12px', height: '12px' }} /> : <Copy style={{ width: '12px', height: '12px' }} />}
-                  {copied ? 'Copied' : 'Copy message'}
+                <button
+                  onClick={handleCopy}
+                  className="btn-primary text-xs"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied to Clipboard!' : 'Copy Full Email'}</span>
                 </button>
               </div>
             </div>
+
           </div>
         ) : (
-          <div
-            style={{
-              padding: '40px 24px',
-              textAlign: 'center',
-              border: '1px dashed var(--border-moderate)',
-              borderRadius: '4px',
-            }}
-          >
-            <Mail style={{ width: '24px', height: '24px', color: 'var(--text-muted)', margin: '0 auto 12px' }} />
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Ready to synthesise
-            </p>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '360px', margin: '0 auto', lineHeight: 1.6 }}>
-              Select your angle and click "Generate pitch draft" to produce an email citing {business.name}'s exact digital signals.
+          <div className="card p-10 text-center space-y-3 bg-[var(--surface-2)]">
+            <Mail className="w-10 h-10 text-[var(--text-muted)] mx-auto" />
+            <h4 className="text-base font-bold text-[var(--text-primary)]">
+              Ready to generate personalized pitch
+            </h4>
+            <p className="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">
+              Pick your preferred angle above and click <strong>"Generate Tailored Email"</strong>. Gemini will compose a ready-to-send pitch referencing {business.name}'s exact mobile and conversion flaws.
             </p>
           </div>
         )}
+
       </div>
     </div>
   );

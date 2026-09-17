@@ -6,13 +6,18 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
-  TrendingUp,
-  Sparkles,
-  RefreshCw,
   Send,
   Bookmark,
   BookmarkCheck,
-  MessageSquare,
+  RefreshCw,
+  Sparkles,
+  Phone,
+  Mail,
+  ArrowRight,
+  TrendingUp,
+  Globe,
+  Layers,
+  FileText,
 } from 'lucide-react';
 import { Business, Opportunity, LeadStatus } from '../types.js';
 
@@ -74,632 +79,480 @@ export const BusinessProfileView: React.FC<BusinessProfileViewProps> = ({
     } finally { setIsAddingNote(false); }
   };
 
-  const TABS = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'audit', label: `Technical audit${audit ? ` (${audit.deterministicHealthScore}/100)` : ''}` },
-    { id: 'opportunities', label: `Opportunities (${business.opportunities.length})` },
-    { id: 'crm', label: `Notes${isSaved ? ` (${business.savedLead?.notes.length ?? 0})` : ''}` },
-  ];
-
   let domainDisplay = 'No website';
   if (business.websiteUrl) {
     try { domainDisplay = new URL(business.websiteUrl).hostname; } catch { domainDisplay = business.websiteUrl; }
   }
 
+  const TABS = [
+    { id: 'overview', label: 'Overview & Opportunity' },
+    { id: 'audit', label: `Technical Audit ${audit ? `(${audit.deterministicHealthScore}/100)` : ''}` },
+    { id: 'opportunities', label: `All Services (${business.opportunities.length})` },
+    { id: 'crm', label: `Pipeline Notes ${isSaved ? `(${business.savedLead?.notes.length ?? 0})` : ''}` },
+  ] as const;
+
   return (
-    /* ── Modal backdrop ─────────────────────────────────────────────── */
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 50,
-        display: 'flex',
-        alignItems: 'stretch',
-        justifyContent: 'flex-end',
-        background: 'rgba(0,0,0,0.6)',
-      }}
+      className="fixed inset-0 z-50 flex items-stretch justify-end bg-slate-900/50 backdrop-blur-xs transition-opacity"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* ── Dossier slide-in panel — THE deliberate motion moment ────── */}
+      {/* ── Slide-in Drawer (Spacious & Modern) ─────────────────────────── */}
       <div
-        className="dossier-panel open"
-        style={{
-          background: 'var(--surface-1)',
-          borderLeft: '1px solid var(--border-moderate)',
-          width: '100%',
-          maxWidth: '760px',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '100vh',
-          overflow: 'hidden',
-        }}
+        className="dossier-panel open w-full max-w-2xl bg-[var(--surface-1)] border-l border-[var(--border-subtle)] flex flex-col h-full shadow-2xl overflow-hidden"
       >
 
-        {/* ── Dossier header ────────────────────────────────────────── */}
-        <div
-          style={{
-            padding: '20px 24px 0',
-            borderBottom: '1px solid var(--border-subtle)',
-            flexShrink: 0,
-          }}
-        >
-          {/* Registry tag + close */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span className="signal-badge teal">
-                <ShieldCheck style={{ width: '10px', height: '10px' }} />
-                Verified Active
+        {/* ── Header ────────────────────────────────────────────────────── */}
+        <div className="p-6 sm:p-7 border-b border-[var(--border-subtle)] bg-[var(--surface-1)] shrink-0 space-y-4">
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="badge badge-teal">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Verified Active Business</span>
               </span>
               {business.source.externalId && (
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '10px',
-                    color: 'var(--text-muted)',
-                    fontWeight: 400,
-                  }}
-                >
+                <span className="text-xs font-mono text-[var(--text-muted)]">
                   {business.source.externalId}
                 </span>
               )}
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
-                {business.source.license}
-              </span>
             </div>
+
             <button
               onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-                padding: '4px',
-                borderRadius: '3px',
-                flexShrink: 0,
-              }}
+              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
             >
-              <X style={{ width: '18px', height: '18px' }} />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Company title */}
-          <h1
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '22px',
-              fontWeight: 500,
-              color: 'var(--text-primary)',
-              marginBottom: '6px',
-              lineHeight: 1.2,
-            }}
-          >
-            {business.name}
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              {business.industry}{business.subIndustry ? ` · ${business.subIndustry}` : ''}
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
-              <MapPin style={{ width: '11px', height: '11px' }} />
-              {business.location.address || `${business.location.city}, ${business.location.country}`}
-            </span>
-            {business.websiteUrl && (
-              <a
-                href={business.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--teal-bright)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}
-              >
-                {domainDisplay}
-                <ExternalLink style={{ width: '10px', height: '10px' }} />
-              </a>
-            )}
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] leading-tight">
+              {business.name}
+            </h1>
+            <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)] mt-1.5 flex-wrap">
+              <span>{business.industry}</span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                <span>{business.location.address || `${business.location.city}, ${business.location.country}`}</span>
+              </span>
+              {business.websiteUrl && (
+                <>
+                  <span>•</span>
+                  <a
+                    href={business.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline font-mono"
+                  >
+                    <span>{domainDisplay}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </>
+              )}
+            </div>
           </div>
 
-          {/* Action row */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-            <button className="btn-primary" onClick={() => onOpenOutreach(business)}>
-              <Send style={{ width: '12px', height: '12px' }} />
-              Draft outreach
-            </button>
+          {/* Quick Action Bar */}
+          <div className="flex items-center gap-3 pt-1">
             <button
-              className="btn-secondary"
-              onClick={() => onSaveLead(business.id)}
-              style={{ background: isSaved ? 'var(--teal-surface)' : undefined, borderColor: isSaved ? 'var(--teal-border)' : undefined, color: isSaved ? 'var(--teal-bright)' : undefined }}
+              onClick={() => onOpenOutreach(business)}
+              className="btn-primary text-sm shadow-sm"
             >
-              {isSaved
-                ? <><BookmarkCheck style={{ width: '12px', height: '12px' }} /> Saved to pipeline</>
-                : <><Bookmark style={{ width: '12px', height: '12px' }} /> Save lead</>
-              }
+              <Send className="w-4 h-4" />
+              <span>Draft Pitch Email</span>
+            </button>
+
+            <button
+              onClick={() => onSaveLead(business.id)}
+              className={`btn-secondary text-sm ${
+                isSaved ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 border-teal-200' : ''
+              }`}
+            >
+              {isSaved ? (
+                <>
+                  <BookmarkCheck className="w-4 h-4" />
+                  <span>Saved to Pipeline</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark className="w-4 h-4" />
+                  <span>Save Lead</span>
+                </>
+              )}
             </button>
           </div>
 
-          {/* Tab nav */}
-          <div style={{ display: 'flex', gap: '0', borderTop: '1px solid var(--border-subtle)', marginLeft: '-24px', marginRight: '-24px', paddingLeft: '24px' }}>
+          {/* Tab Navigation */}
+          <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-subtle)] overflow-x-auto">
             {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: '12px',
-                  fontWeight: activeTab === tab.id ? 600 : 400,
-                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
-                  background: 'none',
-                  border: 'none',
-                  borderBottom: `2px solid ${activeTab === tab.id ? 'var(--amber)' : 'transparent'}`,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'color 120ms ease',
-                }}
+                className={`pb-2 pt-1 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-amber-700 text-amber-700 font-bold dark:border-amber-400 dark:text-amber-400'
+                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                }`}
               >
                 {tab.label}
               </button>
             ))}
           </div>
+
         </div>
 
-        {/* ── Scrollable body ───────────────────────────────────────── */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+        {/* ── Scrollable Body Content (Spacious) ─────────────────────────── */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-7 space-y-6">
 
-          {/* TAB: OVERVIEW ─────────────────────────────────────────── */}
+          {/* ── TAB: OVERVIEW & OPPORTUNITY ─────────────────────────────── */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Quick-facts grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="panel-elevated" style={{ padding: '16px' }}>
-                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>Contact</p>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.7, fontFamily: 'var(--font-mono)' }}>
-                    {business.phone && <div>{business.phone}</div>}
-                    {business.email && <div style={{ wordBreak: 'break-all' }}>{business.email}</div>}
-                    {!business.phone && !business.email && <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', fontStyle: 'italic' }}>No direct contact found</div>}
+              
+              {/* Quick Contact & Presence Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <div className="card p-5 space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    Contact Channels
+                  </h4>
+                  <div className="space-y-1 text-sm text-[var(--text-primary)]">
+                    <p className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                      <span>{business.phone || 'Phone not listed'}</span>
+                    </p>
+                    <p className="flex items-center gap-2 truncate">
+                      <Mail className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                      <span>{business.email || 'Email not listed'}</span>
+                    </p>
                   </div>
                 </div>
-                <div className="panel-elevated" style={{ padding: '16px' }}>
-                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>Digital presence</p>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                    <div>Website: <span style={{ color: business.hasWebsite ? 'var(--teal-bright)' : 'var(--amber-bright)' }}>{business.hasWebsite ? 'Active domain' : 'None detected'}</span></div>
-                    <div>Mobile: {business.digitalPresence.mobileReadiness}</div>
-                    <div>Contact friction: {business.digitalPresence.contactFriction}</div>
-                    <div>Social channels: {business.digitalPresence.socialChannelsCount}</div>
+
+                <div className="card p-5 space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    Digital Health Summary
+                  </h4>
+                  <div className="text-sm space-y-1">
+                    <p className="text-[var(--text-secondary)]">
+                      Website: <strong className={business.hasWebsite ? 'text-teal-600 dark:text-teal-400' : 'text-rose-600'}>
+                        {business.hasWebsite ? 'Active Domain' : 'No Website'}
+                      </strong>
+                    </p>
+                    <p className="text-[var(--text-secondary)]">
+                      Mobile Layout: <strong className="capitalize text-[var(--text-primary)]">{business.digitalPresence.mobileReadiness}</strong>
+                    </p>
                   </div>
                 </div>
-                <div className="panel-elevated" style={{ padding: '16px', borderLeft: '3px solid var(--amber)' }}>
-                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>Top opportunity</p>
-                  {topOpp ? (
-                    <div>
-                      <span className="tabular-nums" style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 500, color: 'var(--amber-bright)', display: 'block', lineHeight: 1, marginBottom: '4px' }}>
-                        {topOpp.score}%
-                      </span>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{topOpp.title}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--amber)', marginBottom: '2px' }}>{topOpp.targetService}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{topOpp.confidence} confidence</div>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No matched opportunity</p>
-                  )}
-                </div>
+
               </div>
 
-              {/* ─── THE BOLD MOMENT: Tri-Layer Reasoning ────────────────
-                  This is the centrepiece of the product, designed to be
-                  unmistakably different from any SaaS card grid.          */}
+              {/* The Core Opportunity Box */}
               {topOpp && (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                <div className="card overflow-hidden border-amber-200 dark:border-amber-900/60 shadow-md">
+                  
+                  <div className="p-5 sm:p-6 bg-amber-50/50 dark:bg-amber-950/20 border-b border-amber-200/60 dark:border-amber-900/40 flex items-center justify-between gap-4">
                     <div>
-                      <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                        Why approach this business
-                      </h2>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        Three-layer qualification: code evidence, inferred impact, commercial case
+                      <span className="badge badge-amber text-xs mb-1">
+                        Primary Opportunity Identified
+                      </span>
+                      <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                        {topOpp.title}
+                      </h3>
+                      <p className="text-xs text-[var(--text-secondary)]">
+                        Target Service: <strong className="text-amber-700 dark:text-amber-400">{topOpp.targetService}</strong>
                       </p>
                     </div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border-moderate)', padding: '4px 8px', borderRadius: '3px' }}>
-                      {topOpp.confidence} confidence
-                    </span>
+
+                    <div className="text-right shrink-0">
+                      <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
+                        {topOpp.score}%
+                      </div>
+                      <div className="text-xs text-[var(--text-muted)] font-medium">Match Probability</div>
+                    </div>
                   </div>
 
-                  <div
-                    className="panel"
-                    style={{ overflow: 'hidden' }}
-                  >
-                    {/* Layer 1: Observed */}
-                    <div
-                      className="triad-observed"
-                      style={{ padding: '18px 20px', borderBottom: '1px solid var(--border-subtle)' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <CheckCircle2 style={{ width: '13px', height: '13px', color: 'var(--text-muted)', flexShrink: 0 }} />
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
-                          Observed — what the code shows
-                        </span>
+                  {/* 3-Layer Explanation Blocks */}
+                  <div className="divide-y divide-[var(--border-subtle)]">
+                    
+                    {/* Observed Facts */}
+                    <div className="p-5 sm:p-6 space-y-2 bg-[var(--surface-1)]">
+                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                        <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        <span>1. What We Found in Their Code</span>
                       </div>
-                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {topOpp.triad.observed.map((obs, i) => (
-                          <li key={i} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                            <span style={{ color: 'var(--border-strong)', flexShrink: 0, marginTop: '1px' }}>·</span>
-                            <span>{obs}</span>
+                      <ul className="space-y-1.5 text-sm text-[var(--text-secondary)] pt-1">
+                        {topOpp.triad.observed.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-amber-600 font-bold">•</span>
+                            <span>{item}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Layer 2: Inferred */}
-                    <div
-                      className="triad-inferred"
-                      style={{ padding: '18px 20px', borderBottom: '1px solid var(--border-subtle)' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <AlertTriangle style={{ width: '13px', height: '13px', color: 'var(--amber)', flexShrink: 0 }} />
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--amber)' }}>
-                          Inferred — likely client impact
-                        </span>
+                    {/* Client Friction */}
+                    <div className="p-5 sm:p-6 space-y-2 bg-[var(--surface-1)]">
+                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>2. Why This Hurts Their Business</span>
                       </div>
-                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {topOpp.triad.inferred.map((inf, i) => (
-                          <li key={i} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                            <span style={{ color: 'var(--amber-border)', flexShrink: 0, marginTop: '1px' }}>·</span>
-                            <span>{inf}</span>
+                      <ul className="space-y-1.5 text-sm text-[var(--text-secondary)] pt-1">
+                        {topOpp.triad.inferred.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-rose-500 font-bold">•</span>
+                            <span>{item}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Layer 3: Strategic */}
-                    <div
-                      className="triad-strategic"
-                      style={{ padding: '18px 20px', borderBottom: '1px solid var(--border-subtle)' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <TrendingUp style={{ width: '13px', height: '13px', color: 'var(--teal-bright)', flexShrink: 0 }} />
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--teal-bright)' }}>
-                          Strategic rationale — your pitch angle
-                        </span>
+                    {/* Pitch Strategy */}
+                    <div className="p-5 sm:p-6 space-y-2 bg-[var(--surface-1)]">
+                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>3. Your Winning Pitch Angle</span>
                       </div>
-                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
+                      <p className="text-sm italic text-[var(--text-secondary)] pt-1 leading-relaxed bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border-subtle)]">
                         "{topOpp.triad.aiInterpretation}"
                       </p>
                     </div>
 
-                    {/* Recommended action */}
-                    <div
-                      style={{
-                        padding: '14px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '12px',
-                        flexWrap: 'wrap',
-                        background: 'var(--surface-2)',
-                      }}
-                    >
-                      <div>
-                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Recommended pitch</p>
-                        <p style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{topOpp.recommendedAction}</p>
-                      </div>
-                      <button className="btn-primary" onClick={() => onOpenOutreach(business)} style={{ flexShrink: 0 }}>
-                        <Send style={{ width: '12px', height: '12px' }} />
-                        Generate pitch
-                      </button>
-                    </div>
                   </div>
+
+                  <div className="p-4 bg-[var(--surface-2)] border-t border-[var(--border-subtle)] flex items-center justify-end">
+                    <button
+                      onClick={() => onOpenOutreach(business)}
+                      className="btn-primary text-xs"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Draft Outreach Email for This Lead</span>
+                    </button>
+                  </div>
+
                 </div>
               )}
+
             </div>
           )}
 
-          {/* TAB: TECHNICAL AUDIT ──────────────────────────────────── */}
+          {/* ── TAB: TECHNICAL AUDIT ────────────────────────────────────── */}
           {activeTab === 'audit' && (
-            <div className="space-y-5">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div className="space-y-6">
+              
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                    Technical audit
-                  </h2>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    Deterministic DOM crawl — no browser simulation, SSRF-protected
+                  <h3 className="text-base font-bold text-[var(--text-primary)]">
+                    Website Audit Findings
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    Deterministic code crawl inspecting real HTML tags
                   </p>
                 </div>
+
                 {business.hasWebsite && (
-                  <button className="btn-secondary" onClick={handleAuditClick} disabled={isAuditing} style={{ fontSize: '12px' }}>
-                    <RefreshCw style={{ width: '12px', height: '12px', animation: isAuditing ? 'spin 1s linear infinite' : 'none' }} />
-                    {isAuditing ? 'Crawling…' : 'Re-crawl now'}
+                  <button
+                    onClick={handleAuditClick}
+                    disabled={isAuditing}
+                    className="btn-secondary text-xs"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin' : ''}`} />
+                    <span>{isAuditing ? 'Auditing...' : 'Re-crawl Site'}</span>
                   </button>
                 )}
               </div>
 
               {audit ? (
-                <>
-                  {/* Score strip */}
+                <div className="space-y-4">
+                  {/* Health Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="card p-4 text-center">
+                      <span className="text-xs text-[var(--text-muted)] block mb-1">Health Score</span>
+                      <span className="text-2xl font-bold text-amber-700 dark:text-amber-400">
+                        {audit.deterministicHealthScore}/100
+                      </span>
+                    </div>
+                    <div className="card p-4 text-center">
+                      <span className="text-xs text-[var(--text-muted)] block mb-1">Mobile Viewport</span>
+                      <span className={`text-sm font-bold ${audit.hasViewport ? 'text-teal-600' : 'text-rose-500'}`}>
+                        {audit.hasViewport ? '✓ Responsive' : '✕ Missing'}
+                      </span>
+                    </div>
+                    <div className="card p-4 text-center">
+                      <span className="text-xs text-[var(--text-muted)] block mb-1">Page Speed</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">
+                        {audit.responseTimeMs} ms
+                      </span>
+                    </div>
+                    <div className="card p-4 text-center">
+                      <span className="text-xs text-[var(--text-muted)] block mb-1">Call-to-Actions</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">
+                        {audit.ctaCount} buttons
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Checklist Table */}
+                  <div className="card divide-y divide-[var(--border-subtle)] overflow-hidden">
                     {[
-                      { label: 'Health score', value: `${audit.deterministicHealthScore}`, sub: '/100 deterministic' },
-                      { label: 'Mobile viewport', value: audit.hasViewport ? 'Present' : 'Missing!', sub: '<meta name="viewport">', critical: !audit.hasViewport },
-                      { label: 'Response time', value: `${audit.responseTimeMs}ms`, sub: 'HTTP round-trip' },
-                      { label: 'CTA buttons', value: `${audit.ctaCount}`, sub: 'Conversion triggers' },
-                    ].map((m, i) => (
-                      <div
-                        key={i}
-                        className="panel-elevated"
-                        style={{
-                          padding: '14px 16px',
-                          borderLeft: m.critical ? '3px solid var(--amber)' : '3px solid var(--border-subtle)',
-                        }}
-                      >
-                        <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 500 }}>{m.label}</p>
-                        <p className="tabular-nums" style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '20px',
-                          fontWeight: 500,
-                          color: m.critical ? 'var(--amber-bright)' : 'var(--text-primary)',
-                          lineHeight: 1,
-                          marginBottom: '4px',
-                        }}>{m.value}</p>
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{m.sub}</p>
+                      { label: 'HTTPS Protocol', value: audit.isHttps ? 'Secure HTTPS' : 'Insecure HTTP', pass: audit.isHttps },
+                      { label: 'Page Title', value: audit.pageTitle || 'Missing title', pass: Boolean(audit.pageTitle) },
+                      { label: 'Meta Description', value: audit.metaDescription || 'None found', pass: Boolean(audit.metaDescription) },
+                      { label: 'Heading Structure', value: `${audit.h1Count} H1, ${audit.h2Count} H2`, pass: audit.h1Count === 1 },
+                      { label: 'Contact Page Detected', value: audit.hasContactPage ? 'Yes' : 'No', pass: audit.hasContactPage },
+                      { label: 'Click-to-Call Link', value: audit.hasPhoneLink ? 'Yes' : 'No', pass: audit.hasPhoneLink },
+                      { label: 'Detected Technologies', value: audit.detectedTech.join(', ') || 'Custom stack', pass: true },
+                    ].map((row, idx) => (
+                      <div key={idx} className="p-3.5 flex items-center justify-between text-xs">
+                        <span className="font-semibold text-[var(--text-secondary)]">{row.label}</span>
+                        <span className={`font-medium ${row.pass ? 'text-teal-600 dark:text-teal-400' : 'text-rose-500'}`}>
+                          {row.value}
+                        </span>
                       </div>
                     ))}
                   </div>
-
-                  {/* Detailed findings */}
-                  <div className="panel" style={{ overflow: 'hidden' }}>
-                    <p style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', background: 'var(--surface-2)' }}>
-                      Finding breakdown
-                    </p>
-                    <div>
-                      {[
-                        { label: 'HTTPS / SSL', value: audit.isHttps ? 'Valid HTTPS' : 'Insecure HTTP', pass: audit.isHttps },
-                        { label: 'Page title', value: audit.pageTitle || 'Missing <title> tag', mono: true, pass: Boolean(audit.pageTitle) },
-                        { label: 'Meta description', value: audit.metaDescription || 'None found', mono: true, pass: Boolean(audit.metaDescription) },
-                        { label: 'Heading hierarchy', value: `${audit.h1Count} H1, ${audit.h2Count} H2`, pass: audit.h1Count === 1 },
-                        { label: 'Contact page', value: audit.hasContactPage ? 'Found' : 'Not detected', pass: audit.hasContactPage },
-                        { label: 'Phone link', value: audit.hasPhoneLink ? 'Found' : 'Not detected', pass: audit.hasPhoneLink },
-                        { label: 'OpenGraph tags', value: audit.hasOpenGraph ? 'Present' : 'Missing (no social preview)', pass: audit.hasOpenGraph },
-                        { label: 'Broken links', value: `${audit.brokenLinksFound} found`, pass: audit.brokenLinksFound === 0 },
-                        { label: 'Technologies', value: audit.detectedTech.length > 0 ? audit.detectedTech.join(', ') : 'None detected / custom', mono: true, pass: true },
-                        { label: 'CTAs detected', value: audit.detectedCtas.length > 0 ? `"${audit.detectedCtas.join('", "')}"` : 'None', mono: true, pass: audit.detectedCtas.length > 0 },
-                      ].map((row, i) => (
-                        <div
-                          key={i}
-                          className="ledger-row"
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', gap: '12px' }}
-                        >
-                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>{row.label}</span>
-                          <span
-                            style={{
-                              fontSize: '12px',
-                              color: row.pass ? 'var(--teal-bright)' : 'var(--amber-bright)',
-                              fontFamily: row.mono ? 'var(--font-mono)' : 'var(--font-sans)',
-                              textAlign: 'right',
-                              maxWidth: '300px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {row.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
+                </div>
               ) : (
-                <div className="panel" style={{ padding: '40px 24px', textAlign: 'center' }}>
-                  {!business.hasWebsite ? (
-                    <>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No website to audit</p>
-                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '360px', margin: '0 auto' }}>
-                        This business has no owned web presence — a greenfield website build is the direct opportunity.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Audit not yet run</p>
-                      <button className="btn-primary" onClick={handleAuditClick} disabled={isAuditing} style={{ margin: '0 auto' }}>
-                        Run audit now
-                      </button>
-                    </>
+                <div className="card p-8 text-center">
+                  <p className="text-sm text-[var(--text-secondary)] mb-4">
+                    {business.hasWebsite ? 'This business website has not been audited yet.' : 'No website domain detected for this business.'}
+                  </p>
+                  {business.hasWebsite && (
+                    <button onClick={handleAuditClick} disabled={isAuditing} className="btn-primary">
+                      <span>Audit Website Now</span>
+                    </button>
                   )}
                 </div>
               )}
+
             </div>
           )}
 
-          {/* TAB: OPPORTUNITIES ─────────────────────────────────────── */}
+          {/* ── TAB: ALL OPPORTUNITIES ───────────────────────────────────── */}
           {activeTab === 'opportunities' && (
-            <div className="space-y-6">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                  Commercial opportunity analysis
-                </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
+                  Detected Service Opportunities
+                </h3>
                 <button
-                  className="btn-secondary"
                   onClick={handleExplainClick}
                   disabled={isExplaining}
-                  style={{ fontSize: '12px' }}
+                  className="btn-secondary text-xs"
                 >
-                  <Sparkles style={{ width: '12px', height: '12px', animation: isExplaining ? 'spin 1s linear infinite' : 'none' }} />
-                  {isExplaining ? 'Synthesising with Gemini…' : 'Generate AI briefing'}
+                  <Sparkles className={`w-3.5 h-3.5 text-amber-600 ${isExplaining ? 'animate-spin' : ''}`} />
+                  <span>{isExplaining ? 'Analyzing with AI...' : 'Generate AI Brief'}</span>
                 </button>
               </div>
 
+              {/* AI Briefing if generated */}
               {aiExplanation && (
-                <div
-                  className="panel"
-                  style={{ padding: '20px', borderLeft: '3px solid var(--teal)' }}
-                >
-                  <p style={{ fontSize: '11px', color: 'var(--teal-bright)', fontWeight: 600, marginBottom: '12px' }}>
-                    AI commercial brief — Buyer: {aiExplanation.buyerPersona}
-                  </p>
-                  <p style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600, marginBottom: '12px', lineHeight: 1.5 }}>
+                <div className="card p-5 bg-teal-50/50 dark:bg-teal-950/20 border-teal-200 dark:border-teal-900/50 space-y-2">
+                  <span className="badge badge-teal text-xs">AI Commercial Analysis</span>
+                  <h4 className="text-sm font-bold text-[var(--text-primary)]">
+                    Target Buyer Persona: {aiExplanation.buyerPersona}
+                  </h4>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                     {aiExplanation.executiveSummary}
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '4px' }}>Why buy now</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{aiExplanation.whyBuyNow}</p>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '4px' }}>Pitch angle</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{aiExplanation.recommendedPitchAngle}</p>
-                    </div>
+                  <div className="pt-2 text-xs">
+                    <strong className="text-teal-700 dark:text-teal-300">Why buy now: </strong>
+                    <span className="text-[var(--text-secondary)]">{aiExplanation.whyBuyNow}</span>
                   </div>
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {business.opportunities.map(opp => (
-                  <div key={opp.id} className="panel" style={{ overflow: 'hidden' }}>
-                    <div
-                      style={{
-                        padding: '16px 20px',
-                        borderBottom: '1px solid var(--border-subtle)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '12px',
-                        flexWrap: 'wrap',
-                        background: 'var(--surface-2)',
-                      }}
-                    >
-                      <div>
-                        <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '3px' }}>{opp.title}</h3>
-                        <p style={{ fontSize: '12px', color: 'var(--amber)' }}>{opp.targetService}</p>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                          className="tabular-nums"
-                          style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 500, color: 'var(--amber-bright)' }}
-                        >
-                          {opp.score}%
-                        </span>
-                        <span className={`signal-badge ${opp.confidence === 'high' ? 'teal' : 'amber'}`}>
-                          {opp.confidence}
-                        </span>
-                      </div>
+                  <div key={opp.id} className="card p-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-[var(--text-primary)]">
+                        {opp.title}
+                      </h4>
+                      <span className="badge badge-amber text-xs font-bold">
+                        {opp.score}% Match
+                      </span>
                     </div>
-
-                    {/* Evidence table */}
-                    <div>
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: '1fr 1fr 1fr',
-                          padding: '10px 16px',
-                          borderBottom: '1px solid var(--border-subtle)',
-                          background: 'var(--surface-2)',
-                        }}
-                      >
-                        {['Signal', 'Finding', 'Benchmark'].map(h => (
-                          <span key={h} style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)' }}>{h}</span>
-                        ))}
-                      </div>
-                      {opp.evidence.map((ev, i) => (
-                        <div
-                          key={i}
-                          className="ledger-row"
-                          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 16px', gap: '8px' }}
-                        >
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>{ev.metric}</span>
-                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{ev.finding}</span>
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ev.benchmark}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold">
+                      Service: {opp.targetService}
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                      {opp.valueProposition}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* TAB: CRM / NOTES ──────────────────────────────────────── */}
+          {/* ── TAB: CRM & NOTES ────────────────────────────────────────── */}
           {activeTab === 'crm' && (
             <div className="space-y-5">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <div>
-                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                    Pipeline notes
-                  </h2>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    Track conversation stages and record call outcomes
-                  </p>
-                </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
+                  Pipeline Stage & Notes
+                </h3>
                 {isSaved && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Stage:</span>
-                    <select
-                      value={business.savedLead?.status || 'new'}
-                      onChange={e => onUpdateLeadStatus(business.id, e.target.value as LeadStatus)}
-                      className="field-select"
-                      style={{ width: 'auto', fontSize: '12px' }}
-                    >
-                      {['new', 'researching', 'contacted', 'replied', 'qualified', 'won', 'not_interested'].map(s => (
-                        <option key={s} value={s}>{s.replace('_', ' ')}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    value={business.savedLead?.status || 'new'}
+                    onChange={e => onUpdateLeadStatus(business.id, e.target.value as LeadStatus)}
+                    className="field-select text-xs py-1.5 w-auto"
+                  >
+                    <option value="new">New Lead</option>
+                    <option value="researching">Researching</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="replied">Replied</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="won">Closed Won</option>
+                    <option value="not_interested">Not Interested</option>
+                  </select>
                 )}
               </div>
 
-              {/* Add note */}
+              {/* Add Note Input */}
               <form onSubmit={handleAddNoteSubmit} className="space-y-2">
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Add a note
-                </label>
                 <textarea
                   rows={3}
                   value={newNoteText}
                   onChange={e => setNewNoteText(e.target.value)}
-                  placeholder="Call outcome, contact name, follow-up date…"
-                  className="field-input"
-                  style={{ resize: 'vertical' }}
+                  placeholder="Add note (call outcome, decision maker name, follow-up date)..."
+                  className="field-input text-xs"
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    type="submit"
-                    className="btn-primary"
-                    disabled={isAddingNote || !newNoteText.trim()}
-                    style={{ fontSize: '12px' }}
-                  >
-                    Save note
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={isAddingNote || !newNoteText.trim()}
+                  className="btn-primary text-xs ml-auto block"
+                >
+                  <span>{isAddingNote ? 'Saving...' : 'Add Note'}</span>
+                </button>
               </form>
 
-              {/* Notes timeline */}
+              {/* Notes Timeline */}
               {business.savedLead?.notes && business.savedLead.notes.length > 0 ? (
-                <div>
-                  <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px' }}>
-                    History ({business.savedLead.notes.length})
-                  </p>
-                  <div className="space-y-3">
-                    {business.savedLead.notes.map(note => (
-                      <div
-                        key={note.id}
-                        className="panel-elevated"
-                        style={{ padding: '12px 14px' }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>{note.author}</span>
-                          <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
-                            {new Date(note.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.55 }}>{note.text}</p>
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    Note History
+                  </h4>
+                  {business.savedLead.notes.map(note => (
+                    <div key={note.id} className="card p-3.5 space-y-1">
+                      <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                        <span className="font-semibold text-[var(--text-primary)]">{note.author}</span>
+                        <span>{new Date(note.createdAt).toLocaleString()}</span>
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-xs text-[var(--text-secondary)]">{note.text}</p>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
-                  <MessageSquare style={{ width: '14px', height: '14px' }} />
-                  No notes yet
-                </div>
+                <p className="text-xs text-[var(--text-muted)] italic text-center py-4">
+                  No notes recorded yet.
+                </p>
               )}
+
             </div>
           )}
+
         </div>
+
       </div>
     </div>
   );

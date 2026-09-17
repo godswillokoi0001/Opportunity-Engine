@@ -20,29 +20,6 @@ const SERVICES_LIST: ServiceType[] = [
   'Custom Software & Mobile Apps',
 ];
 
-const BACKDROP_STYLE: React.CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  zIndex: 50,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'rgba(0,0,0,0.65)',
-  padding: '16px',
-  overflowY: 'auto',
-};
-
-const MODAL_STYLE: React.CSSProperties = {
-  background: 'var(--surface-1)',
-  border: '1px solid var(--border-moderate)',
-  borderRadius: '6px',
-  maxWidth: '560px',
-  width: '100%',
-  padding: '28px',
-  position: 'relative',
-  margin: 'auto',
-};
-
 export const CampaignModal: React.FC<CampaignModalProps> = ({
   isOpen,
   onClose,
@@ -76,9 +53,19 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
       const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: finalName, service, location, industries, criteria: { websiteRequirement, companySize: 'all' }, providerId }),
+        body: JSON.stringify({
+          name: finalName,
+          service,
+          location,
+          industries,
+          criteria: { websiteRequirement, companySize: 'all' },
+          providerId
+        }),
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Failed to create campaign'); }
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to create campaign');
+      }
       const data = await res.json();
       onCampaignCreated(data.campaign);
       onClose();
@@ -89,94 +76,118 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
     }
   };
 
-  const fieldLabel = (text: string) => (
-    <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-      {text}
-    </label>
-  );
-
   return (
-    <div style={BACKDROP_STYLE} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={MODAL_STYLE}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="card w-full max-w-xl p-6 sm:p-8 relative my-8 shadow-2xl space-y-6"
+        onClick={e => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
-          style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+          className="absolute top-5 right-5 p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
         >
-          <X style={{ width: '18px', height: '18px' }} />
+          <X className="w-5 h-5" />
         </button>
 
-        {/* Header — no ALL-CAPS eyebrow */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <Compass style={{ width: '14px', height: '14px', color: 'var(--amber)' }} />
-          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--amber)' }}>New campaign</span>
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+            <Compass className="w-3.5 h-3.5" />
+            <span>Targeting Setup</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+            Launch a Discovery Campaign
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">
+            Specify the service you offer and target market. The engine will discover real businesses, execute deterministic code audits, and qualify opportunities.
+          </p>
         </div>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '6px' }}>
-          Define your discovery target
-        </h2>
-        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-          Specify what you're selling and who needs it. The engine discovers real businesses, measures their digital weaknesses, and surfaces qualified leads.
-        </p>
 
         {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', marginBottom: '20px', background: 'var(--rose-surface)', border: '1px solid var(--rose-border)', borderRadius: '4px', fontSize: '12px', color: 'var(--rose-bright)' }}>
-            <AlertCircle style={{ width: '13px', height: '13px', flexShrink: 0 }} />
-            {error}
+          <div className="card p-3 border-rose-200 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Service */}
-          <div>
-            {fieldLabel('Service you\'re selling')}
-            <select value={service} onChange={e => setService(e.target.value as ServiceType)} className="field-select">
-              {SERVICES_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+          
+          {/* Service to Sell */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+              What Service Are You Pitching?
+            </label>
+            <select
+              value={service}
+              onChange={e => setService(e.target.value as ServiceType)}
+              className="field-select"
+            >
+              {SERVICES_LIST.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
             </select>
           </div>
 
           {/* Location & Industries */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              {fieldLabel('Target location')}
-              <div style={{ position: 'relative' }}>
-                <MapPin style={{ width: '12px', height: '12px', color: 'var(--text-muted)', position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input type="text" required value={location} onChange={e => setLocation(e.target.value)} placeholder="Lagos, Nigeria" className="field-input" style={{ paddingLeft: '28px' }} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Target Location (City / Hub)
+              </label>
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  required
+                  value={location}
+                  onChange={e => setLocation(e.target.value)}
+                  placeholder="e.g. Lagos, Nigeria"
+                  className="field-input pl-9 text-xs"
+                />
               </div>
             </div>
-            <div>
-              {fieldLabel('Target industries')}
-              <div style={{ position: 'relative' }}>
-                <Briefcase style={{ width: '12px', height: '12px', color: 'var(--text-muted)', position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input type="text" required value={industryInput} onChange={e => setIndustryInput(e.target.value)} placeholder="Logistics, Real Estate" className="field-input" style={{ paddingLeft: '28px' }} />
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Target Industries
+              </label>
+              <div className="relative">
+                <Briefcase className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  required
+                  value={industryInput}
+                  onChange={e => setIndustryInput(e.target.value)}
+                  placeholder="Logistics, Real Estate"
+                  className="field-input pl-9 text-xs"
+                />
               </div>
             </div>
           </div>
 
-          {/* Website requirement */}
-          <div>
-            {fieldLabel('Website presence filter')}
+          {/* Website Presence Filter */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+              Website Presence Filter
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'any', label: 'Any status' },
-                { id: 'must_have_website', label: 'Has website' },
-                { id: 'no_website_only', label: 'No website' },
+                { id: 'any', label: 'Any Status' },
+                { id: 'must_have_website', label: 'Has Website (Needs Upgrade)' },
+                { id: 'no_website_only', label: 'No Website (Greenfield)' },
               ].map(item => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => setWebsiteRequirement(item.id as any)}
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: websiteRequirement === item.id ? 600 : 400,
-                    padding: '8px 10px',
-                    borderRadius: '4px',
-                    border: '1px solid',
-                    borderColor: websiteRequirement === item.id ? 'var(--amber)' : 'var(--border-moderate)',
-                    background: websiteRequirement === item.id ? 'var(--amber-surface)' : 'transparent',
-                    color: websiteRequirement === item.id ? 'var(--amber-bright)' : 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    transition: 'all 120ms ease',
-                    textAlign: 'center',
-                  }}
+                  className={`p-2.5 rounded-lg text-xs font-semibold border text-center transition-all cursor-pointer ${
+                    websiteRequirement === item.id
+                      ? 'border-amber-600 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300'
+                      : 'border-[var(--border-moderate)] hover:bg-[var(--surface-2)] text-[var(--text-secondary)]'
+                  }`}
                 >
                   {item.label}
                 </button>
@@ -184,31 +195,33 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
             </div>
           </div>
 
-          {/* Provider */}
-          <div>
-            {fieldLabel('Data source')}
-            <div className="space-y-2">
+          {/* Data Provider Choice */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+              Data Discovery Provider
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: 'curated_commercial_registry', title: 'Verified public commercial registries', desc: 'Lagos, London, Austin · Public Registry / Public Domain', icon: Database },
-                { id: 'osm_open_data', title: 'OpenStreetMap open geodata', desc: 'Global commercial POIs · ODbL 1.0 attribution compliant', icon: Compass },
+                {
+                  id: 'curated_commercial_registry',
+                  title: 'Verified Commercial Registries',
+                  desc: 'High-fidelity official registers (Lagos, London, Austin).'
+                },
+                {
+                  id: 'osm_open_data',
+                  title: 'OpenStreetMap Open Geodata',
+                  desc: 'Global POIs and commercial geocoded records under ODbL.'
+                },
               ].map(p => {
-                const Icon = p.icon;
                 const isSelected = providerId === p.id;
                 return (
                   <label
                     key={p.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '10px',
-                      padding: '12px 14px',
-                      borderRadius: '4px',
-                      border: '1px solid',
-                      borderColor: isSelected ? 'var(--amber-border)' : 'var(--border-moderate)',
-                      background: isSelected ? 'var(--amber-surface)' : 'transparent',
-                      cursor: 'pointer',
-                      transition: 'all 120ms ease',
-                    }}
+                    className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-amber-600 bg-amber-50/40 dark:bg-amber-950/20'
+                        : 'border-[var(--border-moderate)] hover:bg-[var(--surface-2)]'
+                    }`}
                   >
                     <input
                       type="radio"
@@ -216,11 +229,11 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
                       value={p.id}
                       checked={isSelected}
                       onChange={() => setProviderId(p.id)}
-                      style={{ marginTop: '2px', accentColor: 'var(--amber)' }}
+                      className="mt-0.5 accent-amber-600"
                     />
                     <div>
-                      <p style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? 'var(--amber-bright)' : 'var(--text-primary)', marginBottom: '2px' }}>{p.title}</p>
-                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{p.desc}</p>
+                      <p className="text-xs font-bold text-[var(--text-primary)]">{p.title}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{p.desc}</p>
                     </div>
                   </label>
                 );
@@ -228,27 +241,48 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
             </div>
           </div>
 
-          {/* Campaign name */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Campaign name (optional)</label>
-              <button type="button" onClick={handleAutoName} style={{ fontSize: '11px', color: 'var(--amber)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-                Generate name
+          {/* Campaign Name */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Campaign Name
+              </label>
+              <button
+                type="button"
+                onClick={handleAutoName}
+                className="text-xs text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+              >
+                Auto-generate name
               </button>
             </div>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Lagos Logistics Web Modernization Q4" className="field-input" />
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Lagos Logistics Web Modernization Q4"
+              className="field-input text-xs"
+            />
           </div>
 
-          {/* Submit */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', paddingTop: '8px' }}>
-            <button type="button" onClick={onClose} className="btn-ghost" style={{ fontSize: '13px' }}>
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-ghost text-xs"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting} className="btn-primary">
-              <Sparkles style={{ width: '12px', height: '12px' }} />
-              {isSubmitting ? 'Running discovery…' : 'Launch campaign'}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-primary text-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{isSubmitting ? 'Scanning Registries...' : 'Launch Campaign'}</span>
             </button>
           </div>
+
         </form>
       </div>
     </div>

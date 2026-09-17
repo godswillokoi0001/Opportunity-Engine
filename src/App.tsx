@@ -31,6 +31,28 @@ export default function App() {
   const [activityLogs, setActivityLogs] = useState<Array<{ id: string; action: string; details: string; timestamp: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('oe_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('oe_theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   // Modals & Sliders
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
@@ -277,7 +299,7 @@ export default function App() {
   const savedCount = businesses.filter(b => Boolean(b.savedLead)).length;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--ground)', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-sans)' }}>
+    <div className="min-h-screen bg-[var(--ground)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-200">
       {/* Top Application Bar */}
       <Navbar
         currentView={currentView}
@@ -285,10 +307,12 @@ export default function App() {
         userProfile={userProfile}
         onNewCampaign={() => setIsNewCampaignOpen(true)}
         activeCampaignName={activeCampaign?.name}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {/* Main View Area */}
-      <main className="flex-1">
+      <main className="flex-1 w-full min-w-0">
         {currentView === 'landing' ? (
           <LandingPage
             onGetStarted={() => {
@@ -300,7 +324,7 @@ export default function App() {
             }}
           />
         ) : (
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0">
             {currentView === 'dashboard' && (
               <DashboardView
                 campaigns={campaigns}

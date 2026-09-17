@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Play, MapPin, Briefcase } from 'lucide-react';
+import { Plus, Play, MapPin, Briefcase, ArrowRight, Compass, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Campaign } from '../types.js';
 
 interface CampaignsViewProps {
@@ -16,161 +16,132 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
   onSelectCampaign,
 }) => {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: '16px',
-          paddingBottom: '20px',
-          borderBottom: '1px solid var(--border-subtle)',
-          flexWrap: 'wrap',
-        }}
-      >
+    <div className="space-y-6 w-full min-w-0">
+      
+      {/* Page Header */}
+      <div className="card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '22px',
-              fontWeight: 500,
-              color: 'var(--text-primary)',
-              marginBottom: '4px',
-            }}
-          >
-            Discovery campaigns
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+            <Compass className="w-3.5 h-3.5" />
+            <span>Targeting & Discovery Sets</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
+            Discovery Campaigns
           </h1>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-            {campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''} · targeted by service, industry, and location
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            {campaigns.length} active targeting {campaigns.length === 1 ? 'campaign' : 'campaigns'} configured for commercial lead scanning
           </p>
         </div>
-        <button className="btn-primary" onClick={onNewCampaign}>
-          <Plus style={{ width: '12px', height: '12px' }} />
-          New campaign
+
+        <button onClick={onNewCampaign} className="btn-primary self-start sm:self-auto cursor-pointer">
+          <Plus className="w-4 h-4" />
+          <span>New Campaign</span>
         </button>
       </div>
 
-      {/* Campaign list */}
+      {/* Campaign List */}
       {campaigns.length === 0 ? (
-        <div className="panel" style={{ padding: '56px 24px', textAlign: 'center' }}>
-          <p
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '18px',
-              color: 'var(--text-secondary)',
-              marginBottom: '12px',
-            }}
-          >
-            No campaigns yet
-          </p>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px', maxWidth: '360px', margin: '0 auto 24px' }}>
-            Create your first campaign to tell the engine what service you're selling and which businesses to target.
-          </p>
-          <button className="btn-primary" onClick={onNewCampaign}>
-            <Plus style={{ width: '12px', height: '12px' }} />
-            Create campaign
+        <div className="card p-12 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+            <Compass className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">
+              No campaigns created yet
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] max-w-sm mx-auto mt-1">
+              Create your first campaign to define which cities and industries you want the engine to audit.
+            </p>
+          </div>
+          <button onClick={onNewCampaign} className="btn-primary cursor-pointer">
+            <Plus className="w-4 h-4" />
+            <span>Create Campaign</span>
           </button>
         </div>
       ) : (
-        <div className="panel" style={{ overflow: 'hidden' }}>
-          {campaigns.map((camp, idx) => (
+        <div className="space-y-4">
+          {campaigns.map((camp) => (
             <div
               key={camp.id}
-              className="ledger-row"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto',
-                gap: '20px',
-                padding: '18px 20px',
-                alignItems: 'center',
-              }}
+              className="card p-6 hover:shadow-md transition-all space-y-4"
             >
-              <div>
-                {/* Name + status */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '10px',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-                  <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {camp.name}
-                  </h3>
-                  <span className={`signal-badge ${camp.status === 'active' ? 'teal' : 'amber'}`}>
-                    {camp.status}
-                  </span>
-                </div>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                
+                {/* Campaign Info */}
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                      {camp.name}
+                    </h3>
+                    <span className="badge badge-teal text-xs">
+                      {camp.status}
+                    </span>
+                  </div>
 
-                {/* Service + location + industries */}
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--amber)', fontWeight: 500 }}>
-                    {camp.service}
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                    <MapPin style={{ width: '10px', height: '10px' }} />
-                    {camp.location}
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                    <Briefcase style={{ width: '10px', height: '10px' }} />
-                    {camp.industries.join(', ')}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)] flex-wrap">
+                    <span className="font-semibold text-amber-700 dark:text-amber-400">
+                      Service: {camp.service}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                      <span>{camp.location}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Briefcase className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                      <span>{camp.industries.join(', ')}</span>
+                    </span>
+                  </div>
 
-                {/* Stats */}
-                <div style={{ display: 'flex', gap: '20px' }}>
-                  {[
-                    { label: 'Discovered', value: camp.discoveredCount },
-                    { label: 'Qualified', value: camp.qualifiedCount, accent: true },
-                    { label: 'Saved', value: camp.savedCount },
-                  ].map(stat => (
-                    <div key={stat.label}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '1px' }}>
-                        {stat.label}
-                      </span>
-                      <span
-                        className="tabular-nums"
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '15px',
-                          fontWeight: 500,
-                          color: stat.accent ? 'var(--amber-bright)' : 'var(--text-primary)',
-                        }}
-                      >
-                        {stat.value}
+                  {/* Campaign Metrics */}
+                  <div className="flex items-center gap-6 pt-2">
+                    <div>
+                      <span className="text-xs text-[var(--text-muted)] block">Discovered</span>
+                      <span className="text-lg font-bold text-[var(--text-primary)]">
+                        {camp.discoveredCount}
                       </span>
                     </div>
-                  ))}
+                    <div>
+                      <span className="text-xs text-[var(--text-muted)] block">Qualified Leads</span>
+                      <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                        {camp.qualifiedCount}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-xs text-[var(--text-muted)] block">Saved in Pipeline</span>
+                      <span className="text-lg font-bold text-teal-600 dark:text-teal-400">
+                        {camp.savedCount}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                <button
-                  className="btn-secondary"
-                  onClick={() => onRunCampaign(camp.id)}
-                  style={{ fontSize: '12px' }}
-                  title="Re-run discovery"
-                >
-                  <Play style={{ width: '11px', height: '11px' }} />
-                  Run
-                </button>
-                <button
-                  className="btn-primary"
-                  onClick={() => onSelectCampaign(camp)}
-                  style={{ fontSize: '12px' }}
-                >
-                  Results
-                </button>
+                {/* Actions */}
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => onRunCampaign(camp.id)}
+                    className="btn-secondary text-xs cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Re-Run Discovery</span>
+                  </button>
+
+                  <button
+                    onClick={() => onSelectCampaign(camp)}
+                    className="btn-primary text-xs cursor-pointer"
+                  >
+                    <span>View Opportunities</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
               </div>
             </div>
           ))}
         </div>
       )}
+
     </div>
   );
 };

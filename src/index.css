@@ -1,261 +1,255 @@
 @import "tailwindcss";
 
-/* ─── Design Token System: Opportunity Engine ──────────────────────────────
-   Grounded in: forensic B2B intelligence, deterministic technical auditing,
-   Lagos/London commercial operators, evidence-backed agency pitch workflow.
-   ─────────────────────────────────────────────────────────────────────── */
+/* ─── Opportunity Engine Design System ──────────────────────────────────────
+   High-contrast, readable, spacious SaaS UI.
+   Light mode: Crisp slate-100 ground, pure white cards, rich slate-900 text,
+   deep amber-700/800 text accents with WCAG AA/AAA compliance.
+   Dark mode: Deep slate-950 ground, rich slate-900 cards, luminous amber.
+   ─────────────────────────────────────────────────────────────────────────── */
 
+/* ── Light Mode (High Contrast & Legibility) ──────────────────────────────── */
 :root {
-  /* ── Dossier Surfaces ── */
-  --ground:           #0D1117;   /* Terminal ground — forensic data focus */
-  --surface-0:        #0D1117;   /* Deepest surface */
-  --surface-1:        #161B22;   /* Main panel / dossier card surface */
-  --surface-2:        #1F2631;   /* Elevated ledger surface */
-  --surface-3:        #252D3A;   /* Hover/active state surface */
-  --border-subtle:    #2A3447;   /* Hairline rules between ledger rows */
-  --border-moderate:  #374255;   /* Card borders, panel edges */
-  --border-strong:    #4A5568;   /* Input borders, strong dividers */
+  color-scheme: light;
 
-  /* ── Type ── */
-  --text-primary:     #E6EDF3;   /* Crisp parchment — high-legibility on dark */
-  --text-secondary:   #8B9BB4;   /* Secondary information, metadata */
-  --text-muted:       #4D5E78;   /* De-emphasized labels, separators */
+  /* Surfaces */
+  --ground:          #F1F5F9;    /* Crisp Slate-100 base — makes white cards pop */
+  --surface-1:       #FFFFFF;    /* Pure white primary card */
+  --surface-2:       #E2E8F0;    /* Slate-200 secondary pill / header */
+  --surface-3:       #CBD5E1;    /* Slate-300 accent borders */
+  --surface-hover:   #F8FAFC;    /* Hover row tint */
 
-  /* ── Signal Colors ──
-     Amber → commercial vulnerability, friction detected, take action.
-     Teal  → verified, deterministic proof, confirmed, SSL valid.
-     Rose  → critical failure, broken, insecure, no website. */
-  --amber:            #D97706;
-  --amber-bright:     #F59E0B;
-  --amber-surface:    #1C1507;   /* Very dark amber tint for backgrounds */
-  --amber-border:     #78340F;
+  /* Borders: clearly visible card boundaries and dividers */
+  --border-subtle:   #CBD5E1;    /* Slate-300 clear dividers */
+  --border-moderate: #94A3B8;    /* Slate-400 card borders */
+  --border-strong:   #64748B;    /* Slate-500 focused inputs */
 
-  --teal:             #0D9488;
-  --teal-bright:      #14B8A6;
-  --teal-surface:     #041E1B;
-  --teal-border:      #134E4A;
+  /* Typography: WCAG AAA Compliant Contrast */
+  --text-primary:    #0F172A;    /* Slate-900 (16.2:1 contrast against white) */
+  --text-secondary:  #1E293B;    /* Slate-800 (12.4:1 contrast against white) */
+  --text-muted:      #475569;    /* Slate-600 (7.0:1 contrast against white) */
+  --text-inverse:    #FFFFFF;
 
-  --rose:             #E11D48;
-  --rose-bright:      #FB7185;
-  --rose-surface:     #1C0A0F;
-  --rose-border:      #881337;
+  /* Accents: Amber-700/800 has 5.5:1 to 7.5:1 contrast against white */
+  --amber:           #B45309;    /* Amber-700 core brand action (4.8:1 with white text) */
+  --amber-bright:    #92400E;    /* Amber-800 hover / active */
+  --amber-light:     #FEF3C7;    /* Amber-100 badge bg */
+  --amber-border:    #F59E0B;    /* Amber-500 badge border */
+  --amber-text:      #78350F;    /* Amber-900 badge text (10.2:1 contrast) */
 
-  /* ── Typography ── */
-  --font-serif:       'Newsreader', Georgia, 'Times New Roman', serif;
-  --font-sans:        'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono:        'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  /* Teal: Teal-700/800 for high-contrast verified status */
+  --teal:            #0F766E;    /* Teal-700 (5.4:1 contrast) */
+  --teal-bright:     #115E59;    /* Teal-800 */
+  --teal-light:      #CCFBF1;    /* Teal-100 */
+  --teal-border:     #14B8A6;    /* Teal-500 */
+  --teal-text:       #134E4A;    /* Teal-900 (9.8:1 contrast) */
+
+  /* Rose: Rose-700/800 */
+  --rose:            #BE123C;    /* Rose-700 */
+  --rose-bright:     #9F1239;    /* Rose-800 */
+  --rose-light:      #FFE4E6;    /* Rose-100 */
+  --rose-border:     #FB7185;    /* Rose-400 */
+  --rose-text:       #881337;    /* Rose-900 (10.1:1 contrast) */
+
+  /* Indigo: Indigo-700/800 */
+  --indigo:          #4338CA;    /* Indigo-700 */
+  --indigo-light:    #EEF2FF;
+  --indigo-border:   #818CF8;
+  --indigo-text:     #312E81;
+
+  /* Typography fonts */
+  --font-serif:   'Newsreader', Georgia, serif;
+  --font-sans:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Shadows: subtle dark drop shadow gives crisp separation */
+  --shadow-sm:  0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+  --shadow-md:  0 4px 6px -1px rgba(15, 23, 42, 0.10), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --shadow-lg:  0 10px 15px -3px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.06);
+  --shadow-xl:  0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
 }
 
-/* ── Base Reset ─────────────────────────────────────────────────────────── */
+/* ── Dark Mode (Rich & Luminous) ──────────────────────────────────────────── */
+html.dark {
+  color-scheme: dark;
 
+  /* Surfaces */
+  --ground:          #0B0F19;    /* Deep slate-950 dark background */
+  --surface-1:       #111827;    /* Slate-900 primary card */
+  --surface-2:       #1E293B;    /* Slate-800 secondary */
+  --surface-3:       #334155;    /* Slate-700 */
+  --surface-hover:   #1E293B;
+
+  /* Borders */
+  --border-subtle:   #1E293B;
+  --border-moderate: #334155;
+  --border-strong:   #475569;
+
+  /* Typography */
+  --text-primary:    #F8FAFC;
+  --text-secondary:  #CBD5E1;
+  --text-muted:      #94A3B8;
+  --text-inverse:    #0F172A;
+
+  /* Accents */
+  --amber:           #F59E0B;
+  --amber-bright:    #FBBF24;
+  --amber-light:     #3B1F04;
+  --amber-border:    #78350F;
+  --amber-text:      #FDE68A;
+
+  --teal:            #14B8A6;
+  --teal-bright:     #2DD4BF;
+  --teal-light:      #042F2E;
+  --teal-border:     #115E59;
+  --teal-text:       #99F6E4;
+
+  --rose:            #F43F5E;
+  --rose-bright:     #FB7185;
+  --rose-light:      #3F0B18;
+  --rose-border:     #881337;
+  --rose-text:       #FECDD3;
+
+  --indigo:          #6366F1;
+  --indigo-light:    #1E1B4B;
+  --indigo-border:   #312E81;
+  --indigo-text:     #C7D2FE;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg:  0 10px 25px rgba(0, 0, 0, 0.45);
+  --shadow-xl:  0 20px 35px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 html {
-  font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+  font-feature-settings: "kern" 1, "liga" 1;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   background-color: var(--ground);
   color: var(--text-primary);
   font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.5;
+  transition: background-color 200ms ease, color 200ms ease;
+  overflow-x: hidden;
+  width: 100%;
 }
 
-/* Selection */
 ::selection {
   background: var(--amber);
-  color: var(--ground);
+  color: #FFFFFF;
 }
 
-/* ── Focus Visibility ───────────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--amber-bright);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 6px;
 }
 
-/* ── Typography Utilities ───────────────────────────────────────────────── */
-
-/* Newsreader is reserved for investigation titles, dossier headings, and
-   executive summaries — it should never appear on buttons or labels. */
+/* ── Typography Utilities ─────────────────────────────────────────────────── */
 .font-serif {
   font-family: var(--font-serif) !important;
 }
+
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
 .font-mono {
   font-family: var(--font-mono) !important;
 }
 
-/* Tabular numerals for aligned data columns */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Scrollbar ──────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
+/* ── Card Styling (Crisp High-Contrast Borders & Shadows) ─────────────────── */
+.card {
   background: var(--surface-1);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-moderate);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
 }
 
-/* ── Dossier Reveal Animation ───────────────────────────────────────────── 
-   ONE deliberate motion: the business dossier side-panel slides in from
-   the right when a lead is selected. Everything else is instantaneous.
-   Controlled with .dossier-reveal class + JS-applied .open class.
-   Respects prefers-reduced-motion: no animation at all.               */
-
-@media (prefers-reduced-motion: no-preference) {
-  .dossier-panel {
-    transform: translateX(100%);
-    opacity: 0;
-    transition:
-      transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 200ms ease;
-  }
-
-  .dossier-panel.open {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.card:hover {
+  border-color: var(--border-moderate);
 }
 
-/* Reduced motion: instant show/hide, no animation */
-@media (prefers-reduced-motion: reduce) {
-  .dossier-panel {
-    transition: none;
-  }
+.card-elevated {
+  background: var(--surface-1);
+  border: 1.5px solid var(--border-moderate);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
 }
 
-/* ── Signal Badge Base ──────────────────────────────────────────────────── */
-.signal-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 3px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.4;
-  font-family: var(--font-sans);
-}
-
-.signal-badge.amber {
-  background: var(--amber-surface);
-  border: 1px solid var(--amber-border);
-  color: var(--amber-bright);
-}
-
-.signal-badge.teal {
-  background: var(--teal-surface);
-  border: 1px solid var(--teal-border);
-  color: var(--teal-bright);
-}
-
-.signal-badge.rose {
-  background: var(--rose-surface);
-  border: 1px solid var(--rose-border);
-  color: var(--rose-bright);
-}
-
-/* ── Input / Form Controls ─────────────────────────────────────────────── */
-.field-input {
-  width: 100%;
+.card-inner {
   background: var(--surface-2);
-  border: 1px solid var(--border-moderate);
-  border-radius: 4px;
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  padding: 8px 12px;
-  transition: border-color 150ms ease;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
 }
 
-.field-input:focus {
-  outline: none;
-  border-color: var(--amber);
-}
-
-.field-input::placeholder {
-  color: var(--text-muted);
-}
-
-.field-select {
-  width: 100%;
-  background: var(--surface-2);
-  border: 1px solid var(--border-moderate);
-  border-radius: 4px;
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  padding: 8px 12px;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234D5E78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 32px;
-  cursor: pointer;
-  transition: border-color 150ms ease;
-}
-
-.field-select:focus {
-  outline: none;
-  border-color: var(--amber);
-}
-
-/* ── Button Tokens ─────────────────────────────────────────────────────── */
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   background: var(--amber);
-  color: var(--ground);
+  color: #FFFFFF;
   font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 13px;
-  padding: 9px 18px;
-  border-radius: 4px;
-  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: background-color 150ms ease;
+  transition: all 150ms ease;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.35);
   white-space: nowrap;
 }
 
 .btn-primary:hover {
   background: var(--amber-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: transparent;
+  justify-content: center;
+  gap: 8px;
+  background: var(--surface-1);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 13px;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid var(--border-moderate);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-moderate);
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease;
+  transition: all 150ms ease;
   white-space: nowrap;
 }
 
@@ -264,108 +258,178 @@ body {
   border-color: var(--border-strong);
 }
 
-.btn-secondary:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
 .btn-ghost {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 6px;
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 12px;
-  padding: 5px 8px;
-  border-radius: 3px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: color 120ms ease, background-color 120ms ease;
+  transition: all 150ms ease;
 }
 
 .btn-ghost:hover {
-  color: var(--text-primary);
   background: var(--surface-2);
+  color: var(--text-primary);
 }
 
-/* ── Ledger / Table Rows ────────────────────────────────────────────────── */
+/* ── Badges ───────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.badge-amber {
+  background: var(--amber-light);
+  border: 1px solid var(--amber-border);
+  color: var(--amber-text);
+}
+
+.badge-teal {
+  background: var(--teal-light);
+  border: 1px solid var(--teal-border);
+  color: var(--teal-text);
+}
+
+.badge-rose {
+  background: var(--rose-light);
+  border: 1px solid var(--rose-border);
+  color: var(--rose-text);
+}
+
+.badge-indigo {
+  background: var(--indigo-light);
+  border: 1px solid var(--indigo-border);
+  color: var(--indigo-text);
+}
+
+.badge-neutral {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+/* ── Form Inputs ──────────────────────────────────────────────────────────── */
+.field-input {
+  width: 100%;
+  background: var(--surface-1);
+  border: 1.5px solid var(--border-moderate);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 10px 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2);
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.field-select {
+  width: 100%;
+  background: var(--surface-1);
+  border: 1.5px solid var(--border-moderate);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 10px 36px 10px 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field-select:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2);
+}
+
+/* ── Table Rows ───────────────────────────────────────────────────────────── */
 .ledger-row {
   border-bottom: 1px solid var(--border-subtle);
   transition: background-color 120ms ease;
 }
 
 .ledger-row:hover {
-  background: var(--surface-2);
+  background: var(--surface-hover);
 }
 
 .ledger-row:last-child {
   border-bottom: none;
 }
 
-/* ── Panel / Dossier Card ───────────────────────────────────────────────── */
-.panel {
-  background: var(--surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-}
-
-.panel-elevated {
-  background: var(--surface-2);
-  border: 1px solid var(--border-moderate);
-  border-radius: 5px;
-}
-
-/* ── Opportunity Score Ring (CSS only) ──────────────────────────────────── */
-.score-ring {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-}
-
-/* ── Vertical Timeline (Activity Log) ──────────────────────────────────── */
-.timeline-item {
-  position: relative;
-  padding-left: 20px;
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 5px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--border-moderate);
-}
-
-.timeline-item.active::before {
-  background: var(--amber);
-}
-
-.timeline-item + .timeline-item::after {
-  content: '';
-  position: absolute;
-  left: 2.5px;
-  bottom: calc(100% - 5px);
-  width: 1px;
-  height: calc(100% - 12px);
-  background: var(--border-subtle);
-  top: auto;
-}
-
-/* ── Tri-Layer Reasoning Colors ─────────────────────────────────────────── */
+/* ── Tri-Layer Qualification Cards ────────────────────────────────────────── */
 .triad-observed {
-  border-left: 3px solid var(--border-strong);
+  border-left: 4px solid var(--border-strong);
 }
 
 .triad-inferred {
-  border-left: 3px solid var(--amber);
+  border-left: 4px solid var(--amber);
 }
 
 .triad-strategic {
-  border-left: 3px solid var(--teal);
+  border-left: 4px solid var(--teal);
+}
+
+/* ── Dossier Slide-In Drawer ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .dossier-panel {
+    transform: translateX(100%);
+    opacity: 0;
+    transition:
+      transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 180ms ease;
+  }
+
+  .dossier-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dossier-panel {
+    transition: none;
+  }
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-moderate);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }

@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Layers,
+  LayoutDashboard,
   Compass,
   Sparkles,
   Users,
   Globe,
   Sliders,
   Plus,
+  Sun,
+  Moon,
+  TrendingUp,
+  Menu,
+  X,
+  ChevronRight,
 } from 'lucide-react';
 import { UserProfile } from '../types.js';
 
@@ -16,6 +22,8 @@ interface NavbarProps {
   userProfile: UserProfile;
   onNewCampaign: () => void;
   activeCampaignName?: string;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -24,9 +32,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   userProfile,
   onNewCampaign,
   activeCampaignName,
+  theme,
+  onToggleTheme,
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Layers },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'campaigns', label: 'Campaigns', icon: Compass },
     { id: 'discovery', label: 'Opportunities', icon: Sparkles },
     { id: 'leads', label: 'Pipeline', icon: Users },
@@ -39,252 +51,266 @@ export const Navbar: React.FC<NavbarProps> = ({
     .slice(0, 2)
     .join('');
 
+  const handleNavClick = (viewId: typeof navItems[number]['id']) => {
+    setCurrentView(viewId);
+    setMobileMenuOpen(false);
+  };
+
   return (
     <header
       style={{
         background: 'var(--surface-1)',
         borderBottom: '1px solid var(--border-subtle)',
       }}
-      className="sticky top-0 z-30"
+      className="sticky top-0 z-40 transition-colors duration-200"
     >
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 gap-3">
 
-          {/* Wordmark */}
-          <button
-            onClick={() => setCurrentView('landing')}
-            className="flex items-center gap-2.5 focus-visible:outline-none group"
-            style={{ textDecoration: 'none' }}
-          >
-            {/* Monogram glyph — amber on ground, not a rounded SaaS logo */}
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '11px',
-                fontWeight: 500,
-                color: 'var(--amber)',
-                background: 'var(--amber-surface)',
-                border: '1px solid var(--amber-border)',
-                borderRadius: '3px',
-                padding: '4px 7px',
-                letterSpacing: '0.04em',
+          {/* ── 1. Brand Logo ── */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => {
+                setCurrentView('landing');
+                setMobileMenuOpen(false);
               }}
+              className="flex items-center gap-2.5 text-left group focus-visible:outline-none cursor-pointer"
             >
-              OE
-            </span>
-            <div>
-              <span
+              <div
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  display: 'block',
-                  lineHeight: 1.2,
+                  background: 'var(--amber)',
+                  color: '#ffffff',
                 }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0"
               >
-                Opportunity Engine
-              </span>
-            </div>
-          </button>
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col">
+                <span
+                  style={{ color: 'var(--text-primary)' }}
+                  className="font-bold text-base tracking-tight leading-tight whitespace-nowrap"
+                >
+                  Opportunity Engine
+                </span>
+                <span
+                  style={{ color: 'var(--text-muted)' }}
+                  className="text-[11px] leading-tight hidden sm:block whitespace-nowrap"
+                >
+                  Commercial Intelligence
+                </span>
+              </div>
+            </button>
 
-          {/* Active campaign context — no middle dots, no chevron decoration */}
-          {activeCampaignName && currentView !== 'landing' && (
-            <div
-              className="hidden lg:flex items-center gap-2"
-              style={{
-                fontSize: '12px',
-                color: 'var(--text-muted)',
-                paddingLeft: '12px',
-                borderLeft: '1px solid var(--border-subtle)',
-                marginLeft: '12px',
-              }}
-            >
-              <span style={{ color: 'var(--text-muted)' }}>Active:</span>
-              <span
+            {/* Active campaign chip: only on very wide screens so it NEVER causes overflow */}
+            {activeCampaignName && currentView !== 'landing' && (
+              <div
                 style={{
-                  color: 'var(--text-secondary)',
-                  fontWeight: 500,
-                  maxWidth: '200px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  background: 'var(--surface-2)',
+                  borderColor: 'var(--border-subtle)',
                 }}
+                className="hidden 2xl:flex items-center gap-2 px-3 py-1 rounded-full border text-xs ml-2"
               >
-                {activeCampaignName}
-              </span>
-              {/* Live pulse — the only decorative element, and it encodes real state */}
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: 'var(--teal)',
-                }}
-              />
-            </div>
-          )}
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse shrink-0" />
+                <span style={{ color: 'var(--text-muted)' }}>Campaign:</span>
+                <span
+                  style={{ color: 'var(--text-primary)' }}
+                  className="font-semibold max-w-[130px] truncate"
+                >
+                  {activeCampaignName}
+                </span>
+              </div>
+            )}
+          </div>
 
-          {/* Center nav */}
-          <nav className="hidden md:flex items-center gap-0.5" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+          {/* ── 2. Desktop Navigation Bar (Responsive Breaths) ── */}
+          <nav className="hidden lg:flex items-center gap-1 shrink-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentView === item.id;
               return (
                 <button
                   key={item.id}
-                  onClick={() => setCurrentView(item.id)}
-                  className="flex items-center gap-1.5"
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    background: isActive ? 'var(--surface-2)' : 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'color 120ms ease, background-color 120ms ease',
-                  }}
-                  onMouseEnter={e => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
-                      (e.currentTarget as HTMLElement).style.background = 'var(--surface-2)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
-                      (e.currentTarget as HTMLElement).style.background = 'transparent';
-                    }
-                  }}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? 'bg-amber-100 text-amber-950 font-bold border border-amber-300/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60'
+                      : 'hover:bg-[var(--surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
                 >
-                  <Icon
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      color: isActive ? 'var(--amber)' : 'var(--text-muted)',
-                    }}
-                  />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-700 dark:text-amber-400' : 'text-[var(--text-muted)]'}`} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
-          {/* Right rail */}
-          <div className="flex items-center gap-2.5">
+          {/* Tablet Icon-Only Nav (Between md and lg: prevents collision) */}
+          <nav className="hidden md:flex lg:hidden items-center gap-1 shrink-0">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  title={item.label}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300'
+                      : 'hover:bg-[var(--surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-amber-700 dark:text-amber-400' : 'text-[var(--text-muted)]'}`} />
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* ── 3. Right Rail: Theme Toggle, New Campaign, Profile, Mobile Menu Button ── */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+
+            {/* Light / Dark Mode Toggle */}
+            <button
+              onClick={onToggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              aria-label="Toggle theme"
+              className="w-9 h-9 rounded-lg flex items-center justify-center border transition-all cursor-pointer hover:bg-[var(--surface-2)] shrink-0"
+              style={{
+                borderColor: 'var(--border-moderate)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
+
+            {/* New Campaign Button */}
             <button
               onClick={onNewCampaign}
-              className="btn-primary"
-              style={{ fontSize: '12px', padding: '7px 14px' }}
+              className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2 shrink-0 cursor-pointer"
             >
-              <Plus style={{ width: '12px', height: '12px' }} />
-              New Campaign
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Campaign</span>
+              <span className="sm:hidden">New</span>
             </button>
 
-            <div
-              style={{
-                width: '1px',
-                height: '20px',
-                background: 'var(--border-subtle)',
-              }}
-              className="hidden sm:block"
-            />
-
-            {/* User identity — no avatar rings, no rounded-full SaaS template */}
+            {/* Profile Avatar Button */}
             <button
-              onClick={() => setCurrentView('settings')}
-              className="flex items-center gap-2 btn-ghost"
+              onClick={() => {
+                setCurrentView('settings');
+                setMobileMenuOpen(false);
+              }}
+              title={`Agency Settings (${userProfile.name})`}
+              className="hidden sm:flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-[var(--surface-2)] cursor-pointer shrink-0"
             >
-              <span
+              <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '3px',
                   background: 'var(--surface-2)',
-                  border: '1px solid var(--border-moderate)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '10px',
-                  fontWeight: 500,
-                  color: 'var(--text-secondary)',
-                  flexShrink: 0,
+                  borderColor: 'var(--border-moderate)',
+                  color: 'var(--text-primary)',
                 }}
+                className="w-8 h-8 rounded-full border flex items-center justify-center font-bold text-xs shrink-0"
               >
                 {initials}
-              </span>
-              <div className="hidden xl:block text-left">
-                <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                  {userProfile.name}
-                </p>
-                <p
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--text-muted)',
-                    lineHeight: 1.2,
-                    maxWidth: '120px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {userProfile.agencyName}
-                </p>
               </div>
             </button>
+
+            {/* Mobile Menu Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              aria-label="Open mobile menu"
+              className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center border transition-colors cursor-pointer hover:bg-[var(--surface-2)] shrink-0"
+              style={{
+                borderColor: 'var(--border-moderate)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+
           </div>
+
         </div>
       </div>
 
-      {/* Mobile nav — icons with labels */}
-      <div
-        className="md:hidden flex items-center justify-around overflow-x-auto px-2 py-1.5"
-        style={{ borderTop: '1px solid var(--border-subtle)', background: 'var(--ground)' }}
-      >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id)}
-              className="flex flex-col items-center py-1 px-2"
-              style={{
-                fontSize: '10px',
-                fontWeight: 500,
-                color: isActive ? 'var(--amber)' : 'var(--text-muted)',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                gap: '3px',
-              }}
-            >
-              <Icon style={{ width: '14px', height: '14px' }} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-        <button
-          onClick={() => setCurrentView('settings')}
-          className="flex flex-col items-center py-1 px-2"
+      {/* ── 4. Mobile Dropdown Menu (Clean, Non-Floating Drawer) ── */}
+      {mobileMenuOpen && (
+        <div
           style={{
-            fontSize: '10px',
-            fontWeight: 500,
-            color: currentView === 'settings' ? 'var(--amber)' : 'var(--text-muted)',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-            gap: '3px',
+            background: 'var(--surface-1)',
+            borderTop: '1px solid var(--border-subtle)',
           }}
+          className="md:hidden border-b shadow-lg transition-all"
         >
-          <Sliders style={{ width: '14px', height: '14px' }} />
-          <span>Settings</span>
-        </button>
-      </div>
+          <div className="px-4 py-3 space-y-1">
+            
+            {/* Active campaign indicator if present */}
+            {activeCampaignName && currentView !== 'landing' && (
+              <div className="px-3 py-2 rounded-lg bg-[var(--surface-2)] text-xs flex items-center justify-between mb-2">
+                <span className="text-[var(--text-muted)]">Active Campaign:</span>
+                <span className="font-semibold text-[var(--text-primary)] truncate max-w-[180px]">
+                  {activeCampaignName}
+                </span>
+              </div>
+            )}
+
+            {/* Navigation links */}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    isActive
+                      ? 'bg-amber-100 text-amber-950 font-bold border border-amber-300/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-amber-700 dark:text-amber-400' : 'text-[var(--text-muted)]'}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--text-muted)] opacity-60" />
+                </button>
+              );
+            })}
+
+            <div className="pt-2 border-t border-[var(--border-subtle)] mt-2">
+              <button
+                onClick={() => {
+                  setCurrentView('settings');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                  currentView === 'settings'
+                    ? 'bg-amber-50 text-amber-900 font-bold dark:bg-amber-950/40 dark:text-amber-300'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Sliders className="w-4 h-4 text-[var(--text-muted)]" />
+                  <span>Agency Settings & Profile</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                  <span>{userProfile.agencyName}</span>
+                  <ChevronRight className="w-4 h-4 opacity-60" />
+                </div>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </header>
   );
 };
