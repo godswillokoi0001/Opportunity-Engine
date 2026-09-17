@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Sliders, 
-  User, 
-  Building2, 
-  ShieldCheck, 
-  Database, 
-  Cpu, 
-  CreditCard, 
-  Check, 
+import {
+  Sliders,
+  Building2,
+  Database,
+  CreditCard,
+  Check,
   Save,
-  Info
 } from 'lucide-react';
 import { ServiceType, UserProfile } from '../types.js';
 
@@ -48,16 +44,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     try {
       const locs = targetLocations.split(',').map(s => s.trim()).filter(Boolean);
       const inds = targetIndustries.split(',').map(s => s.trim()).filter(Boolean);
-
-      await onSaveProfile({
-        name,
-        email,
-        agencyName,
-        primaryService,
-        targetLocations: locs,
-        targetIndustries: inds,
-      });
-
+      await onSaveProfile({ name, email, agencyName, primaryService, targetLocations: locs, targetIndustries: inds });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2500);
     } finally {
@@ -65,197 +52,236 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
+  const fieldLabel = (text: string) => (
+    <label
+      style={{
+        display: 'block',
+        fontSize: '11px',
+        fontWeight: 600,
+        color: 'var(--text-secondary)',
+        marginBottom: '6px',
+        textTransform: 'none',
+        letterSpacing: 0,
+      }}
+    >
+      {text}
+    </label>
+  );
+
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
-        <div className="flex items-center space-x-2 text-indigo-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <Sliders className="w-4 h-4" />
-          <span>Agency Configuration</span>
-        </div>
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">
-          Account, Targeting & Provider Settings
+    <div className="space-y-6" style={{ maxWidth: '760px', margin: '0 auto' }}>
+
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div style={{ paddingBottom: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '22px',
+            fontWeight: 500,
+            color: 'var(--text-primary)',
+            marginBottom: '4px',
+          }}
+        >
+          Account & targeting
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Configure default qualification criteria, swappable data providers, and monetization parameters
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+          Configure your operator identity, default targeting profile, and review data provider licensing.
         </p>
+      </div>
 
-        <form onSubmit={handleSave} className="mt-6 space-y-6">
-          {/* Section 1: User & Agency Info */}
-          <div className="border-b border-slate-200 pb-6 space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-slate-500" />
-              <span>Agency & Operator Identity</span>
-            </h2>
+      {/* ── Profile form ─────────────────────────────────────────────────── */}
+      <div className="panel" style={{ padding: '24px' }}>
+        <h2
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            marginBottom: '20px',
+          }}
+        >
+          <Building2 style={{ width: '14px', height: '14px', color: 'var(--text-muted)' }} />
+          Operator & agency identity
+        </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Operator Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Agency / Studio Name
-                </label>
-                <input
-                  type="text"
-                  value={agencyName}
-                  onChange={(e) => setAgencyName(e.target.value)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Contact Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Primary Commercial Craft
-                </label>
-                <select
-                  value={primaryService}
-                  onChange={(e) => setPrimaryService(e.target.value as ServiceType)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  {AVAILABLE_SERVICES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
+        <form onSubmit={handleSave} className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              {fieldLabel('Your name')}
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className="field-input" />
+            </div>
+            <div>
+              {fieldLabel('Agency / studio name')}
+              <input type="text" value={agencyName} onChange={e => setAgencyName(e.target.value)} className="field-input" />
+            </div>
+            <div>
+              {fieldLabel('Contact email')}
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="field-input" />
+            </div>
+            <div>
+              {fieldLabel('Primary commercial service')}
+              <select value={primaryService} onChange={e => setPrimaryService(e.target.value as ServiceType)} className="field-select">
+                {AVAILABLE_SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
             </div>
           </div>
 
-          {/* Section 2: Default Targeting */}
-          <div className="border-b border-slate-200 pb-6 space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <Sliders className="w-4 h-4 text-slate-500" />
-              <span>Default Opportunity Targeting Profile</span>
-            </h2>
-
+          <div
+            style={{
+              paddingTop: '20px',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Sliders style={{ width: '12px', height: '12px', color: 'var(--text-muted)' }} />
+              Default discovery targets
+            </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Default Target Locations (Comma-separated)
-                </label>
+                {fieldLabel('Target locations (comma-separated)')}
                 <input
                   type="text"
                   value={targetLocations}
-                  onChange={(e) => setTargetLocations(e.target.value)}
-                  placeholder="Lagos, Nigeria, London, UK"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  onChange={e => setTargetLocations(e.target.value)}
+                  placeholder="Lagos, London, Austin"
+                  className="field-input"
                 />
               </div>
-
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Default Target Industries (Comma-separated)
-                </label>
+                {fieldLabel('Target industries (comma-separated)')}
                 <input
                   type="text"
                   value={targetIndustries}
-                  onChange={(e) => setTargetIndustries(e.target.value)}
+                  onChange={e => setTargetIndustries(e.target.value)}
                   placeholder="Logistics, Real Estate, Hospitality"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="field-input"
                 />
               </div>
             </div>
           </div>
 
-          {/* Submit Profile */}
-          <div className="flex items-center justify-end space-x-3">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', paddingTop: '4px' }}>
             {isSaved && (
-              <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                <Check className="w-4 h-4" /> Profile Saved Successfully
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--teal-bright)', fontWeight: 500 }}>
+                <Check style={{ width: '13px', height: '13px' }} />
+                Profile saved
               </span>
             )}
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              className="btn-primary"
             >
-              <Save className="w-3.5 h-3.5" />
-              <span>{isSaving ? 'Saving...' : 'Update Targeting Profile'}</span>
+              <Save style={{ width: '12px', height: '12px' }} />
+              {isSaving ? 'Saving…' : 'Save profile'}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Provider Abstraction & Data Legal Architecture */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-        <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-          <Database className="w-4 h-4 text-slate-500" />
-          <span>Swappable Data Providers & Legal Licensing</span>
+      {/* ── Data providers ───────────────────────────────────────────────── */}
+      <div className="panel" style={{ padding: '24px' }}>
+        <h2
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            marginBottom: '8px',
+          }}
+        >
+          <Database style={{ width: '14px', height: '14px', color: 'var(--text-muted)' }} />
+          Swappable data providers
         </h2>
-        <p className="text-xs text-slate-600 leading-relaxed">
-          Opportunity Engine utilizes a strict provider abstraction interface (`IDataProvider`) to query permitted public commercial sources without reliance on scraping or private keys.
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.6, maxWidth: '540px' }}>
+          Opportunity Engine uses a strict <code style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', background: 'var(--surface-2)', padding: '1px 4px', borderRadius: '2px', color: 'var(--text-primary)' }}>IDataProvider</code> interface. All sources are public, licensed, and require no scraping or private keys.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="p-4 rounded-lg border border-slate-200 bg-slate-50 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <strong className="text-slate-900">Verified Public Commercial Registry</strong>
-              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Active</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              name: 'Verified Public Commercial Registry',
+              description: 'High-fidelity curated registers for Lagos, London, and Austin commercial hubs.',
+              license: 'Public Registry / Public Domain',
+            },
+            {
+              name: 'OpenStreetMap Open Geodata',
+              description: 'Commercial POIs via Overpass API under the Open Database License.',
+              license: 'ODbL 1.0 — Attribution Compliant',
+            },
+          ].map(provider => (
+            <div
+              key={provider.name}
+              className="panel-elevated"
+              style={{ padding: '14px 16px' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                  {provider.name}
+                </h3>
+                <span className="signal-badge teal" style={{ flexShrink: 0 }}>Active</span>
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '8px' }}>
+                {provider.description}
+              </p>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                {provider.license}
+              </span>
             </div>
-            <p className="text-slate-500 text-[11px]">
-              High-fidelity public registers for commercial hubs (Lagos, London, Austin).
-            </p>
-            <span className="text-[10px] text-slate-400 block font-mono">License: Public Registry / Public Domain</span>
-          </div>
-
-          <div className="p-4 rounded-lg border border-slate-200 bg-slate-50 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <strong className="text-slate-900">OpenStreetMap Open Geodata</strong>
-              <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded">Active</span>
-            </div>
-            <p className="text-slate-500 text-[11px]">
-              Global commercial POIs via Overpass API queries under Open Database License (ODbL).
-            </p>
-            <span className="text-[10px] text-slate-400 block font-mono">License: ODbL 1.0 (Attribution Compliant)</span>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Paystack Monetization Architecture */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <CreditCard className="w-4 h-4 text-slate-500" />
-            <span>Commercial Monetization & Paystack Integration Architecture</span>
+      {/* ── Paystack architecture ────────────────────────────────────────── */}
+      <div className="panel" style={{ padding: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          <h2
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
+            }}
+          >
+            <CreditCard style={{ width: '14px', height: '14px', color: 'var(--text-muted)' }} />
+            Paystack monetization
           </h2>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-            Enterprise Ready
-          </span>
+          <span className="signal-badge amber">Africa-optimised payments</span>
         </div>
 
-        <p className="text-xs text-slate-600 leading-relaxed">
-          Paystack powers frictionless transactions across African and international B2B markets via cards, Nigerian bank transfers, USSD, and mobile money. The architecture decouples payment authorization from webhook fulfillment:
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: 1.6, maxWidth: '540px' }}>
+          Paystack powers frictionless B2B transactions via cards, Nigerian bank transfers, USSD, and mobile money. Payment authorization is fully decoupled from webhook fulfillment via HMAC-validated callbacks.
         </p>
 
-        <div className="p-4 rounded-lg bg-slate-900 text-slate-200 text-xs font-mono space-y-2">
-          <p className="text-indigo-400">// Recommended Paystack Integration Pattern:</p>
-          <p>1. Client initiates checkout: <span className="text-emerald-400">POST /api/paystack/initialize</span></p>
-          <p>2. Server creates transaction via Paystack REST API with user metadata</p>
-          <p>3. Client completes authorization via Paystack inline popup or redirect</p>
-          <p>4. Paystack securely triggers webhook: <span className="text-emerald-400">POST /api/paystack/webhook</span> with HMAC SHA512 signature</p>
-          <p>5. Server validates signature with secret key, updates plan quota, and issues credits</p>
+        {/* Integration pattern — this IS code, so JetBrains Mono is appropriate */}
+        <div
+          style={{
+            background: 'var(--ground)',
+            border: '1px solid var(--border-moderate)',
+            borderRadius: '4px',
+            padding: '16px',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            lineHeight: 1.7,
+            color: 'var(--text-secondary)',
+            overflowX: 'auto',
+          }}
+        >
+          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>// Paystack integration pattern</div>
+          <div><span style={{ color: 'var(--text-muted)' }}>1.</span> Client initiates checkout: <span style={{ color: 'var(--teal-bright)' }}>POST /api/paystack/initialize</span></div>
+          <div><span style={{ color: 'var(--text-muted)' }}>2.</span> Server creates transaction via Paystack REST API with user metadata</div>
+          <div><span style={{ color: 'var(--text-muted)' }}>3.</span> Client completes via Paystack inline popup or hosted redirect</div>
+          <div><span style={{ color: 'var(--text-muted)' }}>4.</span> Paystack triggers webhook: <span style={{ color: 'var(--teal-bright)' }}>POST /api/paystack/webhook</span> + HMAC SHA512 signature</div>
+          <div><span style={{ color: 'var(--text-muted)' }}>5.</span> Server validates signature → updates plan quota → issues credits</div>
         </div>
       </div>
+
     </div>
   );
 };

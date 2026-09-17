@@ -277,7 +277,7 @@ export default function App() {
   const savedCount = businesses.filter(b => Boolean(b.savedLead)).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased">
+    <div style={{ minHeight: '100vh', background: 'var(--ground)', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-sans)' }}>
       {/* Top Application Bar */}
       <Navbar
         currentView={currentView}
@@ -300,7 +300,7 @@ export default function App() {
             }}
           />
         ) : (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {currentView === 'dashboard' && (
               <DashboardView
                 campaigns={campaigns}
@@ -338,17 +338,18 @@ export default function App() {
 
             {currentView === 'leads' && (
               <SavedLeadsView
-                businesses={businesses}
+                savedBusinesses={businesses.filter(b => Boolean(b.savedLead))}
                 onSelectBusiness={setSelectedBusiness}
-                onUpdateStatus={handleUpdateLeadStatus}
+                onUpdateLeadStatus={handleUpdateLeadStatus}
                 onAddNote={handleAddNote}
                 onOpenOutreach={setOutreachBusiness}
               />
             )}
 
+
             {currentView === 'auditor' && (
               <LiveAuditorView
-                onRunLiveAudit={handleRunLiveAudit}
+                onAuditUrl={handleRunLiveAudit}
               />
             )}
 

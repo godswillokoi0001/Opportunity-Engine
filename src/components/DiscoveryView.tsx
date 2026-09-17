@@ -1,20 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Globe, 
-  Phone, 
-  Mail, 
-  Sparkles, 
-  Bookmark, 
-  BookmarkCheck, 
-  ChevronRight, 
-  ExternalLink,
-  ShieldCheck,
-  AlertCircle,
-  CheckCircle2,
+import {
+  Search,
   RefreshCw,
-  Send
+  Bookmark,
+  BookmarkCheck,
+  Send,
 } from 'lucide-react';
 import { Business } from '../types.js';
 
@@ -38,353 +28,373 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState('all');
   const [websiteFilter, setWebsiteFilter] = useState<'all' | 'has_website' | 'no_website'>('all');
-  const [selectedOpportunityType, setSelectedOpportunityType] = useState('all');
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'health'>('score');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Derive unique industries
   const industries = useMemo(() => {
     const set = new Set<string>();
     businesses.forEach(b => set.add(b.industry));
-    return Array.from(set);
+    return Array.from(set).sort();
   }, [businesses]);
 
-  // Derive unique opportunity types
-  const oppTypes = useMemo(() => {
-    const set = new Set<string>();
-    businesses.forEach(b => {
-      b.opportunities.forEach(o => set.add(o.title));
-    });
-    return Array.from(set);
-  }, [businesses]);
-
-  // Filtered and sorted records
   const filtered = useMemo(() => {
-    return businesses.filter(b => {
-      // Search
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const matchName = b.name.toLowerCase().includes(q);
-        const matchCity = b.location.city.toLowerCase().includes(q);
-        const matchInd = b.industry.toLowerCase().includes(q);
-        if (!matchName && !matchCity && !matchInd) return false;
-      }
-
-      // Industry
-      if (selectedIndustry !== 'all' && b.industry !== selectedIndustry) {
-        return false;
-      }
-
-      // Website status
-      if (websiteFilter === 'has_website' && !b.hasWebsite) return false;
-      if (websiteFilter === 'no_website' && b.hasWebsite) return false;
-
-      // Opportunity type
-      if (selectedOpportunityType !== 'all') {
-        const hasType = b.opportunities.some(o => o.title === selectedOpportunityType);
-        if (!hasType) return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'score') {
-        const scoreA = a.opportunities[0]?.score || 0;
-        const scoreB = b.opportunities[0]?.score || 0;
-        return scoreB - scoreA;
-      }
-      if (sortBy === 'health') {
-        const hA = a.audit?.deterministicHealthScore || 0;
-        const hB = b.audit?.deterministicHealthScore || 0;
-        return hA - hB; // Lowest health score first (highest opportunity)
-      }
-      return a.name.localeCompare(b.name);
-    });
-  }, [businesses, searchQuery, selectedIndustry, websiteFilter, selectedOpportunityType, sortBy]);
+    return businesses
+      .filter(b => {
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          if (
+            !b.name.toLowerCase().includes(q) &&
+            !b.location.city.toLowerCase().includes(q) &&
+            !b.industry.toLowerCase().includes(q)
+          ) return false;
+        }
+        if (selectedIndustry !== 'all' && b.industry !== selectedIndustry) return false;
+        if (websiteFilter === 'has_website' && !b.hasWebsite) return false;
+        if (websiteFilter === 'no_website' && b.hasWebsite) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'score') return (b.opportunities[0]?.score ?? 0) - (a.opportunities[0]?.score ?? 0);
+        if (sortBy === 'health') return (a.audit?.deterministicHealthScore ?? 100) - (b.audit?.deterministicHealthScore ?? 100);
+        return a.name.localeCompare(b.name);
+      });
+  }, [businesses, searchQuery, selectedIndustry, websiteFilter, sortBy]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    try {
-      await onRefreshDiscovery();
-    } finally {
-      setIsRefreshing(false);
-    }
+    try { await onRefreshDiscovery(); } finally { setIsRefreshing(false); }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header & Controls */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+    <div className="space-y-5">
+
+      {/* ─── Header & filters ─────────────────────────────────────────── */}
+      <div className="panel" style={{ padding: '16px 20px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
           <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="text-xl font-bold tracking-tight text-slate-900">
-                Discovered Business Opportunities
-              </h1>
-              <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full border border-indigo-100">
-                {filtered.length} of {businesses.length} records
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Public commercial records with deterministic signals and explainable buying reasons
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '20px',
+                fontWeight: 500,
+                color: 'var(--text-primary)',
+                marginBottom: '4px',
+              }}
+            >
+              Discovered opportunities
+            </h1>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              {filtered.length} of {businesses.length} businesses · public commercial records with deterministic audit signals
             </p>
           </div>
-
-          <div className="flex items-center space-x-2.5">
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 transition-colors"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>Re-run Engine</span>
-            </button>
-          </div>
+          <button
+            className="btn-secondary"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            style={{ fontSize: '12px' }}
+          >
+            <RefreshCw
+              style={{
+                width: '12px',
+                height: '12px',
+                animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
+              }}
+            />
+            Re-run engine
+          </button>
         </div>
 
-        {/* Filters Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-4">
-          {/* Search Query */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+        {/* Filter row */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+          <div style={{ position: 'relative' }}>
+            <Search
+              style={{
+                width: '13px',
+                height: '13px',
+                position: 'absolute',
+                left: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+                pointerEvents: 'none',
+              }}
+            />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search company, city, industry..."
-              className="w-full text-xs pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search company, city, industry…"
+              className="field-input"
+              style={{ paddingLeft: '30px' }}
             />
           </div>
-
-          {/* Industry Filter */}
-          <div>
-            <select
-              value={selectedIndustry}
-              onChange={(e) => setSelectedIndustry(e.target.value)}
-              className="w-full text-xs py-2 px-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="all">All Industries ({industries.length})</option>
-              {industries.map(ind => (
-                <option key={ind} value={ind}>{ind}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Website Filter */}
-          <div>
-            <select
-              value={websiteFilter}
-              onChange={(e) => setWebsiteFilter(e.target.value as any)}
-              className="w-full text-xs py-2 px-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="all">All Website Statuses</option>
-              <option value="has_website">Has Website (Needs Upgrade)</option>
-              <option value="no_website">No Website (Needs Greenfield Site)</option>
-            </select>
-          </div>
-
-          {/* Opportunity Type */}
-          <div>
-            <select
-              value={selectedOpportunityType}
-              onChange={(e) => setSelectedOpportunityType(e.target.value)}
-              className="w-full text-xs py-2 px-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="all">All Opportunity Types</option>
-              {oppTypes.map(o => (
-                <option key={o} value={o}>{o}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sort By */}
-          <div>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full text-xs py-2 px-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-medium"
-            >
-              <option value="score">Sort: Opportunity Score (High to Low)</option>
-              <option value="health">Sort: Most Fragile Presence (Low Health)</option>
-              <option value="name">Sort: Company Name (A-Z)</option>
-            </select>
-          </div>
+          <select
+            value={selectedIndustry}
+            onChange={e => setSelectedIndustry(e.target.value)}
+            className="field-select"
+          >
+            <option value="all">All industries</option>
+            {industries.map(ind => (
+              <option key={ind} value={ind}>{ind}</option>
+            ))}
+          </select>
+          <select
+            value={websiteFilter}
+            onChange={e => setWebsiteFilter(e.target.value as any)}
+            className="field-select"
+          >
+            <option value="all">Any website status</option>
+            <option value="has_website">Has website (upgrade opportunity)</option>
+            <option value="no_website">No website (greenfield)</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+            className="field-select"
+          >
+            <option value="score">Sort by opportunity score</option>
+            <option value="health">Sort by weakest digital presence</option>
+            <option value="name">Sort by company name</option>
+          </select>
         </div>
       </div>
 
-      {/* Results Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
-              <tr>
-                <th className="py-3 px-4">Business & Location</th>
-                <th className="py-3 px-4">Digital Footprint</th>
-                <th className="py-3 px-4">Contact Pathways</th>
-                <th className="py-3 px-4">Qualified Opportunity</th>
-                <th className="py-3 px-4 text-center">Score</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+      {/* ─── Results ledger ───────────────────────────────────────────── */}
+      <div className="panel" style={{ overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr
+                style={{
+                  borderBottom: '1px solid var(--border-moderate)',
+                  background: 'var(--surface-2)',
+                }}
+              >
+                {['Company', 'Digital status', 'Contact', 'Opportunity', 'Score', ''].map((col, i) => (
+                  <th
+                    key={i}
+                    style={{
+                      padding: '10px 16px',
+                      textAlign: i === 4 ? 'center' : i === 5 ? 'right' : 'left',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: 'var(--text-muted)',
+                      whiteSpace: 'nowrap',
+                      letterSpacing: 0,
+                      textTransform: 'none',
+                    }}
+                  >
+                    {col}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200/70">
+            <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
-                    <p className="text-sm font-semibold text-slate-700">No businesses match the current filter</p>
-                    <p className="text-xs text-slate-400 mt-1">Try resetting the industry or website filters</p>
+                  <td
+                    colSpan={6}
+                    style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}
+                  >
+                    No results match the current filters.
                   </td>
                 </tr>
               ) : (
-                filtered.map((biz) => {
+                filtered.map(biz => {
                   const topOpp = biz.opportunities[0];
                   const isSaved = Boolean(biz.savedLead);
                   const audit = biz.audit;
+                  let domainDisplay = '';
+                  if (biz.websiteUrl) {
+                    try { domainDisplay = new URL(biz.websiteUrl).hostname; } catch { domainDisplay = biz.websiteUrl; }
+                  }
 
                   return (
-                    <tr 
+                    <tr
                       key={biz.id}
-                      className="hover:bg-slate-50/80 transition-colors group"
+                      className="ledger-row"
+                      style={{ cursor: 'pointer' }}
                     >
-                      {/* Business & Location */}
-                      <td className="py-3.5 px-4">
+                      {/* Company */}
+                      <td style={{ padding: '14px 16px', minWidth: '180px' }}>
                         <button
                           onClick={() => onSelectBusiness(biz)}
-                          className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-left block"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            padding: 0,
+                          }}
                         >
-                          {biz.name}
-                        </button>
-                        <div className="flex items-center space-x-2 text-[11px] text-slate-500 mt-0.5">
-                          <span>{biz.industry}</span>
-                          <span>•</span>
-                          <span>{biz.location.city}, {biz.location.country}</span>
-                        </div>
-                        {biz.source.externalId && (
-                          <span className="text-[10px] font-mono text-slate-400 mt-0.5 block">
-                            Reg: {biz.source.externalId}
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '3px' }}>
+                            {biz.name}
                           </span>
-                        )}
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            {biz.industry} · {biz.location.city}
+                          </span>
+                          {biz.source.externalId && (
+                            <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              {biz.source.externalId}
+                            </span>
+                          )}
+                        </button>
                       </td>
 
-                      {/* Digital Footprint */}
-                      <td className="py-3.5 px-4">
+                      {/* Digital status */}
+                      <td style={{ padding: '14px 16px', minWidth: '160px' }}>
                         {biz.hasWebsite ? (
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                              <span className="font-mono text-[11px] text-slate-700 truncate max-w-[150px]">
-                                {biz.websiteUrl ? new URL(biz.websiteUrl).hostname : 'Website Live'}
-                              </span>
-                            </div>
-                            {audit && (
-                              <div className="flex items-center space-x-1 text-[10px]">
-                                <span className={`px-1.5 py-0.2 rounded font-semibold ${
-                                  audit.hasViewport ? 'bg-slate-100 text-slate-600' : 'bg-rose-50 text-rose-700 border border-rose-200'
-                                }`}>
-                                  {audit.hasViewport ? 'Responsive' : 'Desktop Only'}
+                          <div>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '5px' }}>
+                              {domainDisplay || 'Website active'}
+                            </span>
+                            {audit ? (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <span className={`signal-badge ${audit.hasViewport ? 'teal' : 'amber'}`}>
+                                  {audit.hasViewport ? 'Responsive' : 'No viewport'}
                                 </span>
-                                <span className="text-slate-400">|</span>
-                                <span className="text-slate-500">
-                                  Health: {audit.deterministicHealthScore}/100
+                                <span
+                                  className={`signal-badge ${audit.deterministicHealthScore >= 70 ? 'teal' : audit.deterministicHealthScore >= 40 ? 'amber' : ''}`}
+                                  style={audit.deterministicHealthScore < 40 ? { background: 'var(--rose-surface)', border: '1px solid var(--rose-border)', color: 'var(--rose-bright)' } : {}}
+                                >
+                                  {audit.deterministicHealthScore}/100
                                 </span>
                               </div>
+                            ) : (
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Not yet audited</span>
                             )}
                           </div>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                            No Owned Website
-                          </span>
+                          <span className="signal-badge amber">No website</span>
                         )}
                       </td>
 
-                      {/* Contact Pathways */}
-                      <td className="py-3.5 px-4">
-                        <div className="space-y-0.5 text-[11px] text-slate-600">
+                      {/* Contact */}
+                      <td style={{ padding: '14px 16px', minWidth: '140px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                           {biz.phone && (
-                            <div className="flex items-center space-x-1">
-                              <Phone className="w-3 h-3 text-slate-400" />
-                              <span className="font-mono">{biz.phone}</span>
-                            </div>
+                            <div style={{ fontFamily: 'var(--font-mono)' }}>{biz.phone}</div>
                           )}
                           {biz.email && (
-                            <div className="flex items-center space-x-1">
-                              <Mail className="w-3 h-3 text-slate-400" />
-                              <span className="truncate max-w-[140px]">{biz.email}</span>
+                            <div style={{
+                              maxWidth: '140px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {biz.email}
                             </div>
                           )}
                           {!biz.phone && !biz.email && (
-                            <span className="text-slate-400 italic text-[10px]">Public directory only</span>
+                            <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Directory only</span>
                           )}
                         </div>
                       </td>
 
-                      {/* Qualified Opportunity */}
-                      <td className="py-3.5 px-4 max-w-xs">
+                      {/* Opportunity */}
+                      <td style={{ padding: '14px 16px', maxWidth: '240px' }}>
                         {topOpp ? (
                           <div>
-                            <span className="font-bold text-slate-800 block text-xs">
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '3px' }}>
                               {topOpp.title}
                             </span>
-                            <span className="text-[11px] text-indigo-600 font-semibold block mt-0.5">
+                            <span style={{ fontSize: '11px', color: 'var(--amber)', display: 'block', marginBottom: '3px' }}>
                               {topOpp.targetService}
                             </span>
-                            <span className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                            <span
+                              style={{
+                                fontSize: '11px',
+                                color: 'var(--text-muted)',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                            >
                               {topOpp.triad.observed[0]}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">No direct opportunity rule matched</span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No match on this target</span>
                         )}
                       </td>
 
                       {/* Score */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                         {topOpp ? (
-                          <div className="inline-flex flex-col items-center">
-                            <span className="font-extrabold text-sm text-slate-900">
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span
+                              className="tabular-nums"
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '18px',
+                                fontWeight: 500,
+                                color: topOpp.score >= 80 ? 'var(--amber-bright)' : 'var(--text-secondary)',
+                                lineHeight: 1,
+                              }}
+                            >
                               {topOpp.score}%
                             </span>
-                            <span className={`text-[9px] font-bold uppercase tracking-wider ${
-                              topOpp.confidence === 'high' ? 'text-emerald-600' : 'text-slate-500'
-                            }`}>
-                              {topOpp.confidence} Conf.
+                            <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              {topOpp.confidence}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-slate-400">-</span>
+                          <span style={{ color: 'var(--text-muted)' }}>—</span>
                         )}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end space-x-1.5">
-                          {/* Save Lead */}
+                      <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
                           <button
-                            onClick={() => onSaveLead(biz.id)}
-                            title={isSaved ? 'Already saved in pipeline' : 'Save to Pipeline'}
-                            className={`p-1.5 rounded border transition-colors ${
-                              isSaved 
-                                ? 'bg-emerald-50 border-emerald-300 text-emerald-700' 
-                                : 'border-slate-200 hover:bg-slate-100 text-slate-600'
-                            }`}
+                            onClick={e => { e.stopPropagation(); onSaveLead(biz.id); }}
+                            title={isSaved ? 'Saved to pipeline' : 'Save to pipeline'}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '3px',
+                              border: '1px solid',
+                              cursor: 'pointer',
+                              background: isSaved ? 'var(--teal-surface)' : 'transparent',
+                              borderColor: isSaved ? 'var(--teal-border)' : 'var(--border-moderate)',
+                              color: isSaved ? 'var(--teal-bright)' : 'var(--text-muted)',
+                              transition: 'all 120ms ease',
+                            }}
                           >
-                            {isSaved ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
+                            {isSaved
+                              ? <BookmarkCheck style={{ width: '12px', height: '12px' }} />
+                              : <Bookmark style={{ width: '12px', height: '12px' }} />
+                            }
                           </button>
-
-                          {/* Quick Outreach */}
                           <button
-                            onClick={() => onOpenOutreach(biz)}
-                            title="Generate Tailored Outreach"
-                            className="p-1.5 rounded border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 transition-colors"
+                            onClick={e => { e.stopPropagation(); onOpenOutreach(biz); }}
+                            title="Draft tailored outreach"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '3px',
+                              border: '1px solid var(--amber-border)',
+                              cursor: 'pointer',
+                              background: 'var(--amber-surface)',
+                              color: 'var(--amber-bright)',
+                              transition: 'all 120ms ease',
+                            }}
                           >
-                            <Send className="w-3.5 h-3.5" />
+                            <Send style={{ width: '12px', height: '12px' }} />
                           </button>
-
-                          {/* View Full Report */}
                           <button
                             onClick={() => onSelectBusiness(biz)}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded bg-slate-900 hover:bg-indigo-600 text-white font-semibold text-[11px] transition-colors"
+                            className="btn-secondary"
+                            style={{ fontSize: '11px', padding: '5px 10px' }}
                           >
-                            <span>Report</span>
-                            <ChevronRight className="w-3 h-3" />
+                            Dossier
                           </button>
                         </div>
                       </td>

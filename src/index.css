@@ -1,1 +1,371 @@
 @import "tailwindcss";
+
+/* ─── Design Token System: Opportunity Engine ──────────────────────────────
+   Grounded in: forensic B2B intelligence, deterministic technical auditing,
+   Lagos/London commercial operators, evidence-backed agency pitch workflow.
+   ─────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Dossier Surfaces ── */
+  --ground:           #0D1117;   /* Terminal ground — forensic data focus */
+  --surface-0:        #0D1117;   /* Deepest surface */
+  --surface-1:        #161B22;   /* Main panel / dossier card surface */
+  --surface-2:        #1F2631;   /* Elevated ledger surface */
+  --surface-3:        #252D3A;   /* Hover/active state surface */
+  --border-subtle:    #2A3447;   /* Hairline rules between ledger rows */
+  --border-moderate:  #374255;   /* Card borders, panel edges */
+  --border-strong:    #4A5568;   /* Input borders, strong dividers */
+
+  /* ── Type ── */
+  --text-primary:     #E6EDF3;   /* Crisp parchment — high-legibility on dark */
+  --text-secondary:   #8B9BB4;   /* Secondary information, metadata */
+  --text-muted:       #4D5E78;   /* De-emphasized labels, separators */
+
+  /* ── Signal Colors ──
+     Amber → commercial vulnerability, friction detected, take action.
+     Teal  → verified, deterministic proof, confirmed, SSL valid.
+     Rose  → critical failure, broken, insecure, no website. */
+  --amber:            #D97706;
+  --amber-bright:     #F59E0B;
+  --amber-surface:    #1C1507;   /* Very dark amber tint for backgrounds */
+  --amber-border:     #78340F;
+
+  --teal:             #0D9488;
+  --teal-bright:      #14B8A6;
+  --teal-surface:     #041E1B;
+  --teal-border:      #134E4A;
+
+  --rose:             #E11D48;
+  --rose-bright:      #FB7185;
+  --rose-surface:     #1C0A0F;
+  --rose-border:      #881337;
+
+  /* ── Typography ── */
+  --font-serif:       'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans:        'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:        'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* ── Base Reset ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+}
+
+body {
+  background-color: var(--ground);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Selection */
+::selection {
+  background: var(--amber);
+  color: var(--ground);
+}
+
+/* ── Focus Visibility ───────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--amber-bright);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ── Typography Utilities ───────────────────────────────────────────────── */
+
+/* Newsreader is reserved for investigation titles, dossier headings, and
+   executive summaries — it should never appear on buttons or labels. */
+.font-serif {
+  font-family: var(--font-serif) !important;
+}
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+/* Tabular numerals for aligned data columns */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-moderate);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ── Dossier Reveal Animation ───────────────────────────────────────────── 
+   ONE deliberate motion: the business dossier side-panel slides in from
+   the right when a lead is selected. Everything else is instantaneous.
+   Controlled with .dossier-reveal class + JS-applied .open class.
+   Respects prefers-reduced-motion: no animation at all.               */
+
+@media (prefers-reduced-motion: no-preference) {
+  .dossier-panel {
+    transform: translateX(100%);
+    opacity: 0;
+    transition:
+      transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 200ms ease;
+  }
+
+  .dossier-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Reduced motion: instant show/hide, no animation */
+@media (prefers-reduced-motion: reduce) {
+  .dossier-panel {
+    transition: none;
+  }
+}
+
+/* ── Signal Badge Base ──────────────────────────────────────────────────── */
+.signal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.4;
+  font-family: var(--font-sans);
+}
+
+.signal-badge.amber {
+  background: var(--amber-surface);
+  border: 1px solid var(--amber-border);
+  color: var(--amber-bright);
+}
+
+.signal-badge.teal {
+  background: var(--teal-surface);
+  border: 1px solid var(--teal-border);
+  color: var(--teal-bright);
+}
+
+.signal-badge.rose {
+  background: var(--rose-surface);
+  border: 1px solid var(--rose-border);
+  color: var(--rose-bright);
+}
+
+/* ── Input / Form Controls ─────────────────────────────────────────────── */
+.field-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-moderate);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 8px 12px;
+  transition: border-color 150ms ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.field-select {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-moderate);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 8px 12px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234D5E78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.field-select:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+/* ── Button Tokens ─────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--amber);
+  color: var(--ground);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 18px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: var(--amber-bright);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border-moderate);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.btn-ghost:hover {
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+
+/* ── Ledger / Table Rows ────────────────────────────────────────────────── */
+.ledger-row {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color 120ms ease;
+}
+
+.ledger-row:hover {
+  background: var(--surface-2);
+}
+
+.ledger-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Panel / Dossier Card ───────────────────────────────────────────────── */
+.panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.panel-elevated {
+  background: var(--surface-2);
+  border: 1px solid var(--border-moderate);
+  border-radius: 5px;
+}
+
+/* ── Opportunity Score Ring (CSS only) ──────────────────────────────────── */
+.score-ring {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+/* ── Vertical Timeline (Activity Log) ──────────────────────────────────── */
+.timeline-item {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-moderate);
+}
+
+.timeline-item.active::before {
+  background: var(--amber);
+}
+
+.timeline-item + .timeline-item::after {
+  content: '';
+  position: absolute;
+  left: 2.5px;
+  bottom: calc(100% - 5px);
+  width: 1px;
+  height: calc(100% - 12px);
+  background: var(--border-subtle);
+  top: auto;
+}
+
+/* ── Tri-Layer Reasoning Colors ─────────────────────────────────────────── */
+.triad-observed {
+  border-left: 3px solid var(--border-strong);
+}
+
+.triad-inferred {
+  border-left: 3px solid var(--amber);
+}
+
+.triad-strategic {
+  border-left: 3px solid var(--teal);
+}

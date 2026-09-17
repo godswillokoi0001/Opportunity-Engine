@@ -1,16 +1,5 @@
 import React from 'react';
-import { 
-  Compass, 
-  Plus, 
-  Play, 
-  ChevronRight, 
-  Sparkles, 
-  MapPin, 
-  Briefcase, 
-  Globe, 
-  Calendar,
-  CheckCircle2
-} from 'lucide-react';
+import { Plus, Play, MapPin, Briefcase } from 'lucide-react';
 import { Campaign } from '../types.js';
 
 interface CampaignsViewProps {
@@ -28,104 +17,160 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: '16px',
+          paddingBottom: '20px',
+          borderBottom: '1px solid var(--border-subtle)',
+          flexWrap: 'wrap',
+        }}
+      >
         <div>
-          <div className="flex items-center space-x-2">
-            <Compass className="w-5 h-5 text-indigo-600" />
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              Opportunity Campaigns
-            </h1>
-            <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full border border-indigo-100">
-              {campaigns.length} Total
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Segmented commercial discovery operations targeting specific industries, regions, and service offerings
+          <h1
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '22px',
+              fontWeight: 500,
+              color: 'var(--text-primary)',
+              marginBottom: '4px',
+            }}
+          >
+            Discovery campaigns
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+            {campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''} · targeted by service, industry, and location
           </p>
         </div>
-
-        <button
-          onClick={onNewCampaign}
-          className="inline-flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-xs"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>New Campaign</span>
+        <button className="btn-primary" onClick={onNewCampaign}>
+          <Plus style={{ width: '12px', height: '12px' }} />
+          New campaign
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {campaigns.map((camp) => (
-          <div
-            key={camp.id}
-            className="bg-white border border-slate-200 rounded-xl p-5 hover:border-indigo-300 hover:shadow-xs transition-all space-y-4"
+      {/* Campaign list */}
+      {campaigns.length === 0 ? (
+        <div className="panel" style={{ padding: '56px 24px', textAlign: 'center' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '18px',
+              color: 'var(--text-secondary)',
+              marginBottom: '12px',
+            }}
           >
-            <div className="flex items-start justify-between gap-2">
+            No campaigns yet
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px', maxWidth: '360px', margin: '0 auto 24px' }}>
+            Create your first campaign to tell the engine what service you're selling and which businesses to target.
+          </p>
+          <button className="btn-primary" onClick={onNewCampaign}>
+            <Plus style={{ width: '12px', height: '12px' }} />
+            Create campaign
+          </button>
+        </div>
+      ) : (
+        <div className="panel" style={{ overflow: 'hidden' }}>
+          {campaigns.map((camp, idx) => (
+            <div
+              key={camp.id}
+              className="ledger-row"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto',
+                gap: '20px',
+                padding: '18px 20px',
+                alignItems: 'center',
+              }}
+            >
               <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-bold text-slate-900 text-base">{camp.name}</h3>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                    camp.status === 'active' 
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                      : 'bg-slate-100 text-slate-600'
-                  }`}>
+                {/* Name + status */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '10px',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {camp.name}
+                  </h3>
+                  <span className={`signal-badge ${camp.status === 'active' ? 'teal' : 'amber'}`}>
                     {camp.status}
                   </span>
                 </div>
-                <p className="text-xs font-medium text-indigo-600 mt-0.5">{camp.service}</p>
-              </div>
 
-              <span className="text-[10px] text-slate-400 font-mono">
-                {new Date(camp.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-
-            <div className="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-              <div className="flex items-center space-x-1.5">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span><strong>Target Location:</strong> {camp.location}</span>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span><strong>Industries:</strong> {camp.industries.join(', ')}</span>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span><strong>Provider:</strong> {camp.providerId}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-1 text-xs">
-              <div className="flex items-center space-x-4">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Discovered</span>
-                  <span className="font-extrabold text-slate-900 text-sm">{camp.discoveredCount}</span>
+                {/* Service + location + industries */}
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--amber)', fontWeight: 500 }}>
+                    {camp.service}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <MapPin style={{ width: '10px', height: '10px' }} />
+                    {camp.location}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <Briefcase style={{ width: '10px', height: '10px' }} />
+                    {camp.industries.join(', ')}
+                  </span>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Qualified</span>
-                  <span className="font-extrabold text-indigo-600 text-sm">{camp.qualifiedCount}</span>
+
+                {/* Stats */}
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  {[
+                    { label: 'Discovered', value: camp.discoveredCount },
+                    { label: 'Qualified', value: camp.qualifiedCount, accent: true },
+                    { label: 'Saved', value: camp.savedCount },
+                  ].map(stat => (
+                    <div key={stat.label}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '1px' }}>
+                        {stat.label}
+                      </span>
+                      <span
+                        className="tabular-nums"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '15px',
+                          fontWeight: 500,
+                          color: stat.accent ? 'var(--amber-bright)' : 'var(--text-primary)',
+                        }}
+                      >
+                        {stat.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                 <button
+                  className="btn-secondary"
                   onClick={() => onRunCampaign(camp.id)}
-                  className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors"
+                  style={{ fontSize: '12px' }}
+                  title="Re-run discovery"
                 >
-                  <Play className="w-3 h-3" />
-                  <span>Execute</span>
+                  <Play style={{ width: '11px', height: '11px' }} />
+                  Run
                 </button>
                 <button
+                  className="btn-primary"
                   onClick={() => onSelectCampaign(camp)}
-                  className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-indigo-600 text-white font-semibold text-xs transition-colors"
+                  style={{ fontSize: '12px' }}
                 >
-                  <span>Results</span>
-                  <ChevronRight className="w-3 h-3" />
+                  Results
                 </button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

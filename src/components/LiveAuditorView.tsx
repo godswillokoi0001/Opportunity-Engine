@@ -1,246 +1,307 @@
 import React, { useState } from 'react';
-import { 
-  Globe, 
-  Search, 
-  ShieldCheck, 
-  AlertCircle, 
-  CheckCircle2, 
-  RefreshCw, 
-  ArrowRight, 
-  Smartphone, 
-  Clock, 
-  Cpu, 
-  ExternalLink,
-  Code,
-  Sparkles
-} from 'lucide-react';
+import { Globe, Search, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { WebsiteAudit } from '../types.js';
 
 interface LiveAuditorViewProps {
-  onRunLiveAudit: (url: string) => Promise<WebsiteAudit>;
+  onAuditUrl: (url: string) => Promise<WebsiteAudit & { url: string; rawHtmlSnippet?: string }>;
 }
 
-export const LiveAuditorView: React.FC<LiveAuditorViewProps> = ({
-  onRunLiveAudit,
-}) => {
-  const [urlInput, setUrlInput] = useState('https://lagosforwarding.com.ng');
+export const LiveAuditorView: React.FC<LiveAuditorViewProps> = ({ onAuditUrl }) => {
+  const [url, setUrl] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [auditResult, setAuditResult] = useState<WebsiteAudit | null>(null);
+  const [result, setResult] = useState<(WebsiteAudit & { url: string; rawHtmlSnippet?: string }) | null>(null);
+  const [error, setError] = useState('');
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!urlInput.trim()) return;
-
-    setError(null);
+    if (!url.trim()) return;
+    setError('');
+    setResult(null);
     setIsAuditing(true);
     try {
-      const result = await onRunLiveAudit(urlInput.trim());
-      setAuditResult(result);
+      const auditUrl = url.startsWith('http') ? url.trim() : `https://${url.trim()}`;
+      const data = await onAuditUrl(auditUrl);
+      setResult(data);
     } catch (err: any) {
-      setError(err.message || 'Audit failed. Check that the URL is public and accessible.');
+      setError(err.message || 'Audit failed — check the URL and try again.');
     } finally {
       setIsAuditing(false);
     }
   };
 
+  const scoreColor = (score: number) =>
+    score >= 70 ? 'var(--teal-bright)' : score >= 40 ? 'var(--amber-bright)' : 'var(--rose-bright)';
+
   return (
     <div className="space-y-6">
-      {/* Header & Safe Crawler Explanation */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
-        <div className="flex items-center space-x-2 text-indigo-600 text-xs font-semibold uppercase tracking-wider mb-1">
-          <ShieldCheck className="w-4 h-4" />
-          <span>SSRF-Safe Deterministic Inspector</span>
-        </div>
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">
-          Live Website Diagnostic & Signal Engine
+      {/* Header */}
+      <div style={{ paddingBottom: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '22px',
+            fontWeight: 500,
+            color: 'var(--text-primary)',
+            marginBottom: '6px',
+          }}
+        >
+          Live website auditor
         </h1>
-        <p className="text-xs text-slate-600 mt-1 max-w-2xl">
-          Enter any public business URL to execute an immediate deterministic audit. The crawler validates DNS resolution against private network ranges (SSRF-protected), sets strict size and timeout boundaries, and extracts raw DOM signals.
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '480px', lineHeight: 1.6 }}>
+          Paste any publicly accessible URL. The engine reads the actual HTML markup to measure technical quality — no browser simulation, no guessing.
         </p>
-
-        {/* Input Bar */}
-        <form onSubmit={handleSubmit} className="mt-5 flex flex-col sm:flex-row gap-2.5">
-          <div className="relative flex-1">
-            <Globe className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="e.g. https://lagosforwarding.com.ng or https://example.com"
-              className="w-full text-xs font-mono pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={isAuditing}
-            className="inline-flex items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold px-5 py-2.5 rounded-lg transition-colors shadow-xs"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin' : ''}`} />
-            <span>{isAuditing ? 'Auditing DOM...' : 'Run Live Safe Audit'}</span>
-          </button>
-        </form>
-
-        {/* Sample Quick Links */}
-        <div className="mt-3 flex items-center space-x-2 text-[11px] text-slate-500">
-          <span className="font-semibold">Test with active samples:</span>
-          {[
-            'https://lagosforwarding.com.ng',
-            'https://apexhaulage.ng',
-            'https://nigeriarealties.com',
-            'https://ikejamedical.ng'
-          ].map((sample) => (
-            <button
-              key={sample}
-              type="button"
-              onClick={() => setUrlInput(sample)}
-              className="font-mono text-indigo-600 hover:underline"
-            >
-              {sample.replace('https://', '')}
-            </button>
-          ))}
-        </div>
-
-        {error && (
-          <div className="mt-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
       </div>
 
-      {/* Audit Output */}
-      {auditResult && (
-        <div className="space-y-6">
-          {/* Top Score Matrix */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Health Score</span>
-              <span className="text-3xl font-black text-slate-900 mt-1 block">
-                {auditResult.deterministicHealthScore}/100
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Deterministic signal composite</span>
-            </div>
+      {/* Input */}
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ flex: '1 1 320px', position: 'relative' }}>
+          <Globe
+            style={{
+              width: '13px',
+              height: '13px',
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--text-muted)',
+              pointerEvents: 'none',
+            }}
+          />
+          <input
+            type="url"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            placeholder="https://example.com"
+            className="field-input"
+            style={{ paddingLeft: '32px', fontSize: '14px', fontFamily: 'var(--font-mono)' }}
+            autoComplete="url"
+            disabled={isAuditing}
+          />
+        </div>
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={isAuditing || !url.trim()}
+        >
+          {isAuditing ? (
+            <>
+              <Search style={{ width: '12px', height: '12px', animation: 'spin 1s linear infinite' }} />
+              Auditing…
+            </>
+          ) : (
+            <>
+              <Search style={{ width: '12px', height: '12px' }} />
+              Run audit
+            </>
+          )}
+        </button>
+      </form>
 
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Mobile Optimization</span>
-              <span className={`text-xl font-bold mt-1 block ${auditResult.hasViewport ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {auditResult.hasViewport ? 'Configured' : 'Missing Viewport!'}
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">
-                {auditResult.hasViewport ? 'Scales to screen' : 'Forces 980px desktop view'}
-              </span>
-            </div>
+      {error && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 16px',
+            background: 'var(--rose-surface)',
+            border: '1px solid var(--rose-border)',
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: 'var(--rose-bright)',
+          }}
+        >
+          <XCircle style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+          {error}
+        </div>
+      )}
 
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Latency / Speed</span>
-              <span className="text-3xl font-black text-slate-900 mt-1 block">
-                {auditResult.responseTimeMs}ms
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Direct network round-trip</span>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Detected CTAs</span>
-              <span className="text-3xl font-black text-slate-900 mt-1 block">
-                {auditResult.ctaCount}
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Direct conversion triggers</span>
-            </div>
-          </div>
-
-          {/* Technical Diagnostics Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left: SEO & Structural DOM signals */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
-                DOM & Search Accessibility
-              </h3>
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <span className="text-slate-500 block font-medium">Page Title ({auditResult.pageTitle?.length || 0} chars)</span>
-                  <p className="font-mono text-slate-900 bg-slate-50 p-2 rounded border border-slate-200 mt-0.5">
-                    {auditResult.pageTitle || '<title> tag missing'}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="text-slate-500 block font-medium">Meta Description ({auditResult.metaDescription?.length || 0} chars)</span>
-                  <p className="font-mono text-slate-900 bg-slate-50 p-2 rounded border border-slate-200 mt-0.5">
-                    {auditResult.metaDescription || 'No meta description configured'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 font-semibold block">H1 Headings</span>
-                    <span className="text-lg font-bold text-slate-800">{auditResult.h1Count}</span>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">{auditResult.h1Count === 1 ? 'Optimal (1 H1)' : 'Suboptimal hierarchy'}</span>
-                  </div>
-
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 font-semibold block">H2 Subheadings</span>
-                    <span className="text-lg font-bold text-slate-800">{auditResult.h2Count}</span>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">Section markers</span>
-                  </div>
-                </div>
+      {result && (
+        <div className="space-y-5">
+          {/* Score strip */}
+          <div className="panel" style={{ overflow: 'hidden' }}>
+            <div
+              style={{
+                padding: '14px 20px',
+                borderBottom: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '8px',
+                background: 'var(--surface-2)',
+              }}
+            >
+              <div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {result.url}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Health:</span>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '22px',
+                    fontWeight: 500,
+                    color: scoreColor(result.deterministicHealthScore),
+                    lineHeight: 1,
+                  }}
+                >
+                  {result.deterministicHealthScore}
+                </span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/100</span>
               </div>
             </div>
 
-            {/* Right: Security, Social & Tech Stack */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
-                Security & Tech Stack Signatures
-              </h3>
-
-              <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="font-medium text-slate-700">SSL Certificate / HTTPS</span>
-                  <span className={`font-semibold ${auditResult.isHttps ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {auditResult.isHttps ? 'Encrypted (HTTPS)' : 'Insecure (HTTP)'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="font-medium text-slate-700">OpenGraph Social Preview Tags</span>
-                  <span className={`font-semibold ${auditResult.hasOpenGraph ? 'text-emerald-600' : 'text-amber-600'}`}>
-                    {auditResult.hasOpenGraph ? 'Present (og:title, og:image)' : 'Missing Social Cards'}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-slate-500 block font-medium mb-1.5">Detected Technologies</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {auditResult.detectedTech.length > 0 ? (
-                      auditResult.detectedTech.map(t => (
-                        <span key={t} className="px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-800 font-mono text-[11px]">
-                          {t}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-slate-400 italic">No generic CMS signatures detected (Static or Custom)</span>
-                    )}
+            {/* 4-metric banner */}
+            <div className="grid grid-cols-2 sm:grid-cols-4">
+              {[
+                {
+                  label: 'Mobile viewport',
+                  value: result.hasViewport ? 'Present' : 'Missing',
+                  mono: false,
+                  pass: result.hasViewport,
+                },
+                {
+                  label: 'HTTPS',
+                  value: result.isHttps ? 'Secure' : 'Insecure',
+                  mono: false,
+                  pass: result.isHttps,
+                },
+                {
+                  label: 'Response time',
+                  value: `${result.responseTimeMs}ms`,
+                  mono: true,
+                  pass: result.responseTimeMs < 2000,
+                },
+                {
+                  label: 'CTA buttons',
+                  value: String(result.ctaCount),
+                  mono: true,
+                  pass: result.ctaCount > 0,
+                },
+              ].map((m, i) => {
+                const Icon = m.pass ? CheckCircle2 : AlertTriangle;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      padding: '16px 18px',
+                      borderRight: i < 3 ? '1px solid var(--border-subtle)' : 'none',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
+                      <Icon style={{ width: '11px', height: '11px', color: m.pass ? 'var(--teal)' : 'var(--amber)' }} />
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
+                    </div>
+                    <p
+                      className="tabular-nums"
+                      style={{
+                        fontFamily: m.mono ? 'var(--font-mono)' : 'var(--font-sans)',
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        color: m.pass ? 'var(--teal-bright)' : 'var(--amber-bright)',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {m.value}
+                    </p>
                   </div>
-                </div>
-
-                <div>
-                  <span className="text-slate-500 block font-medium mb-1.5">Detected Action CTAs</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {auditResult.detectedCtas.length > 0 ? (
-                      auditResult.detectedCtas.map((c, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-indigo-800 font-medium text-[10px]">
-                          "{c}"
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-rose-600 font-medium text-[11px]">Zero call-to-action buttons found on landing view</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
+
+          {/* Detailed findings ledger */}
+          <div className="panel" style={{ overflow: 'hidden' }}>
+            <p style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', background: 'var(--surface-2)' }}>
+              Technical findings
+            </p>
+            {[
+              { label: 'Page title', value: result.pageTitle || '(missing)', mono: true, pass: Boolean(result.pageTitle) },
+              { label: 'Meta description', value: result.metaDescription || '(none found)', mono: true, pass: Boolean(result.metaDescription) },
+              { label: 'H1 tags', value: `${result.h1Count} found`, mono: false, pass: result.h1Count === 1 },
+              { label: 'H2 tags', value: `${result.h2Count} found`, mono: false, pass: result.h2Count > 0 },
+              { label: 'Contact page', value: result.hasContactPage ? 'Detected' : 'Not found', mono: false, pass: result.hasContactPage },
+              { label: 'Phone link (tel:)', value: result.hasPhoneLink ? 'Present' : 'None', mono: false, pass: result.hasPhoneLink },
+              { label: 'OpenGraph tags', value: result.hasOpenGraph ? 'Present' : 'Missing', mono: false, pass: result.hasOpenGraph },
+              { label: 'Broken links', value: `${result.brokenLinksFound} found`, mono: false, pass: result.brokenLinksFound === 0 },
+              {
+                label: 'Technologies detected',
+                value: result.detectedTech.length > 0 ? result.detectedTech.join(', ') : 'No fingerprints matched',
+                mono: true,
+                pass: true,
+              },
+              {
+                label: 'CTA copy found',
+                value: result.detectedCtas.length > 0 ? `"${result.detectedCtas.join('", "')}"` : 'None detected',
+                mono: true,
+                pass: result.detectedCtas.length > 0,
+              },
+            ].map((row, i) => {
+              const Icon = row.pass ? CheckCircle2 : AlertTriangle;
+              return (
+                <div
+                  key={i}
+                  className="ledger-row"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', gap: '16px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Icon style={{ width: '12px', height: '12px', color: row.pass ? 'var(--teal)' : 'var(--amber)', flexShrink: 0 }} />
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>{row.label}</span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      color: row.pass ? 'var(--text-primary)' : 'var(--amber-bright)',
+                      fontFamily: row.mono ? 'var(--font-mono)' : 'var(--font-sans)',
+                      textAlign: 'right',
+                      maxWidth: '380px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {row.value}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Raw HTML source snapshot */}
+          {result.rawHtmlSnippet && (
+            <div className="panel" style={{ overflow: 'hidden' }}>
+              <p style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', background: 'var(--surface-2)' }}>
+                Source snapshot (first 600 chars)
+              </p>
+              <pre
+                style={{
+                  margin: 0,
+                  padding: '16px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.6,
+                  overflowX: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                }}
+              >
+                {result.rawHtmlSnippet}
+              </pre>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  Sparkles, 
-  Copy, 
-  Check, 
-  Download, 
-  Send, 
-  RefreshCw, 
-  SlidersHorizontal,
+import {
+  X,
+  Sparkles,
+  Copy,
+  Check,
+  Download,
+  RefreshCw,
   Mail,
-  CheckCircle2,
-  FileText
 } from 'lucide-react';
-import { Business, Opportunity, OutreachGeneration, UserProfile } from '../types.js';
+import { Business, OutreachGeneration, UserProfile } from '../types.js';
 
 interface OutreachModalProps {
   business: Business | null;
@@ -51,13 +47,7 @@ export const OutreachModal: React.FC<OutreachModalProps> = ({
     if (!topOpp) return;
     setIsGenerating(true);
     try {
-      const result = await onGenerateOutreach({
-        businessId: business.id,
-        opportunityId: topOpp.id,
-        angle,
-        tone,
-      });
-
+      const result = await onGenerateOutreach({ businessId: business.id, opportunityId: topOpp.id, angle, tone });
       setSubject(result.subject);
       setBody(result.body);
       setCallToAction(result.callToAction);
@@ -87,179 +77,206 @@ export const OutreachModal: React.FC<OutreachModalProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const ANGLES = [
+    { id: 'problem_solution', title: 'Problem-first', desc: 'Opens with the specific verified finding — mobile viewport missing, no CTA, etc.' },
+    { id: 'value_audit', title: 'Benchmark case', desc: 'Presents industry benchmarks and where this company falls short.' },
+    { id: 'consultative_inquiry', title: 'Executive inquiry', desc: 'Peer-level tone, light on specifics, designed to start a conversation.' },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-7 text-left relative my-6">
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <X className="w-5 h-5" />
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', padding: '16px', overflowY: 'auto' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        style={{
+          background: 'var(--surface-1)',
+          border: '1px solid var(--border-moderate)',
+          borderRadius: '6px',
+          maxWidth: '660px',
+          width: '100%',
+          padding: '28px',
+          position: 'relative',
+          margin: 'auto',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+      >
+        <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+          <X style={{ width: '18px', height: '18px' }} />
         </button>
 
-        {/* Modal Header */}
-        <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Tailored Commercial Outreach Generator</span>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+          <Sparkles style={{ width: '13px', height: '13px', color: 'var(--amber)' }} />
+          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--amber)' }}>Outreach generator</span>
         </div>
-        <h2 className="text-xl font-bold text-slate-950">
-          Personalized Pitch for {business.name}
+        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
+          Pitch for {business.name}
         </h2>
-        <p className="text-xs text-slate-600 mt-0.5 mb-5">
-          Grounded directly in verifiable findings. References specific digital presence signals rather than generic templates.
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.6 }}>
+          Grounded in verifiable findings from the technical audit — not generic templates.
         </p>
 
-        {/* Angle & Strategy Selector */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-          {[
-            {
-              id: 'problem_solution',
-              title: 'Problem-First Angle',
-              desc: 'Leads with specific verified finding & frictionless fix'
-            },
-            {
-              id: 'value_audit',
-              title: 'Value Benchmark Angle',
-              desc: 'Presents industry benchmarks & potential lead lift'
-            },
-            {
-              id: 'consultative_inquiry',
-              title: 'Executive Inquiry',
-              desc: 'Peer-level consultative inquiry regarding quarterly growth'
-            },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setAngle(item.id as any)}
-              className={`p-3 rounded-lg border text-left transition-all ${
-                angle === item.id
-                  ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950'
-                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <p className="text-xs font-bold leading-tight">{item.title}</p>
-              <p className="text-[11px] text-slate-500 mt-1 leading-snug">{item.desc}</p>
-            </button>
-          ))}
+        {/* Angle selector — no uniform SaaS card kit, just clear option buttons */}
+        <div style={{ marginBottom: '16px' }}>
+          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Pitch angle</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {ANGLES.map(a => {
+              const isActive = angle === a.id;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setAngle(a.id as any)}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: '4px',
+                    border: '1px solid',
+                    borderColor: isActive ? 'var(--amber-border)' : 'var(--border-moderate)',
+                    background: isActive ? 'var(--amber-surface)' : 'transparent',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'all 120ms ease',
+                  }}
+                >
+                  <p style={{ fontSize: '12px', fontWeight: 600, color: isActive ? 'var(--amber-bright)' : 'var(--text-primary)', marginBottom: '4px' }}>{a.title}</p>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{a.desc}</p>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Controls Bar: Tone + Trigger */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 mb-5">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-slate-600">Tone:</span>
-            <div className="flex rounded-md border border-slate-300 bg-white p-0.5">
-              {(['consultative', 'direct', 'professional'] as const).map((t) => (
+        {/* Tone + generate */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap',
+            padding: '12px 14px',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '4px',
+            marginBottom: '20px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>Tone:</span>
+            <div style={{ display: 'flex', border: '1px solid var(--border-moderate)', borderRadius: '3px', overflow: 'hidden' }}>
+              {(['consultative', 'direct', 'professional'] as const).map(t => (
                 <button
                   key={t}
                   onClick={() => setTone(t)}
-                  className={`text-[11px] font-medium px-2.5 py-1 rounded capitalize ${
-                    tone === t ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: tone === t ? 600 : 400,
+                    padding: '5px 10px',
+                    background: tone === t ? 'var(--amber-surface)' : 'transparent',
+                    color: tone === t ? 'var(--amber-bright)' : 'var(--text-secondary)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textTransform: 'capitalize',
+                    transition: 'all 100ms ease',
+                    borderRight: t !== 'professional' ? '1px solid var(--border-subtle)' : 'none',
+                  }}
                 >
                   {t}
                 </button>
               ))}
             </div>
           </div>
-
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="inline-flex items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span>{isGenerating ? 'Synthesizing Outreach...' : (body ? 'Regenerate Draft' : 'Generate Tailored Outreach')}</span>
+          <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary" style={{ fontSize: '12px' }}>
+            <RefreshCw style={{ width: '12px', height: '12px', animation: isGenerating ? 'spin 1s linear infinite' : 'none' }} />
+            {isGenerating ? 'Synthesising with Gemini…' : body ? 'Regenerate draft' : 'Generate pitch draft'}
           </button>
         </div>
 
-        {/* Generated Email Form (Editable) */}
+        {/* Output */}
         {body ? (
-          <div className="space-y-3.5">
-            {/* Subject Line */}
+          <div className="space-y-4">
+            {/* Subject */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Subject Line
-              </label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className="w-full text-xs font-semibold text-slate-900 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Subject line</label>
+              <input type="text" value={subject} onChange={e => setSubject(e.target.value)} className="field-input" style={{ fontWeight: 600 }} />
             </div>
 
-            {/* Email Body */}
+            {/* Body */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Message Body (Editable)
-              </label>
-              <textarea
-                rows={6}
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                className="w-full text-xs text-slate-800 p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 leading-relaxed"
-              />
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Message body (editable)</label>
+              <textarea rows={7} value={body} onChange={e => setBody(e.target.value)} className="field-input" style={{ resize: 'vertical', lineHeight: 1.65 }} />
             </div>
 
-            {/* Call to Action */}
+            {/* CTA */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Low-Friction Call To Action
-              </label>
-              <input
-                type="text"
-                value={callToAction}
-                onChange={(e) => setCallToAction(e.target.value)}
-                className="w-full text-xs font-medium text-slate-900 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Call to action</label>
+              <input type="text" value={callToAction} onChange={e => setCallToAction(e.target.value)} className="field-input" />
             </div>
 
-            {/* Referenced Evidence Footprint */}
+            {/* Evidence footprint */}
             {referencedEvidence.length > 0 && (
-              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                  Verifiable Findings Cited In This Message
-                </span>
-                <div className="flex flex-wrap gap-1.5">
+              <div style={{ padding: '12px 14px', background: 'var(--teal-surface)', border: '1px solid var(--teal-border)', borderRadius: '4px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, color: 'var(--teal-bright)', marginBottom: '8px' }}>
+                  Findings cited in this message
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {referencedEvidence.map((ev, i) => (
-                    <span key={i} className="text-[10px] font-medium bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-700">
-                      ✓ {ev}
+                    <span
+                      key={i}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        color: 'var(--teal-bright)',
+                        background: 'var(--ground)',
+                        border: '1px solid var(--teal-border)',
+                        padding: '3px 8px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      <Check style={{ width: '10px', height: '10px' }} />
+                      {ev}
                     </span>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Actions: Copy & Export */}
-            <div className="pt-2 flex items-center justify-between border-t border-slate-200">
-              <span className="text-[11px] text-slate-500">
-                Recipient: {business.email || 'Public inquiry channel'}
+            {/* Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                {business.email || 'Public inquiry channel'}
               </span>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleDownload}
-                  className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Export .txt</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={handleDownload} className="btn-secondary" style={{ fontSize: '12px' }}>
+                  <Download style={{ width: '12px', height: '12px' }} />
+                  Export .txt
                 </button>
-                <button
-                  onClick={handleCopy}
-                  className="inline-flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied to Clipboard!' : 'Copy Full Message'}</span>
+                <button onClick={handleCopy} className="btn-primary" style={{ fontSize: '12px' }}>
+                  {copied ? <Check style={{ width: '12px', height: '12px' }} /> : <Copy style={{ width: '12px', height: '12px' }} />}
+                  {copied ? 'Copied' : 'Copy message'}
                 </button>
               </div>
             </div>
           </div>
         ) : (
-          <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-300 rounded-xl text-slate-500 text-xs">
-            <Mail className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="font-semibold text-slate-700">Ready to synthesize personalized pitch</p>
-            <p className="text-slate-500 text-[11px] mt-1 max-w-sm mx-auto">
-              Select your preferred angle and click "Generate Tailored Outreach" above to synthesize an email citing {business.name}'s exact digital signals.
+          <div
+            style={{
+              padding: '40px 24px',
+              textAlign: 'center',
+              border: '1px dashed var(--border-moderate)',
+              borderRadius: '4px',
+            }}
+          >
+            <Mail style={{ width: '24px', height: '24px', color: 'var(--text-muted)', margin: '0 auto 12px' }} />
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Ready to synthesise
+            </p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '360px', margin: '0 auto', lineHeight: 1.6 }}>
+              Select your angle and click "Generate pitch draft" to produce an email citing {business.name}'s exact digital signals.
             </p>
           </div>
         )}

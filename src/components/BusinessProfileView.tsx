@@ -1,27 +1,18 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  ExternalLink, 
-  Globe, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  ShieldCheck, 
-  CheckCircle2, 
-  AlertCircle, 
-  Sparkles, 
-  RefreshCw, 
-  Send, 
-  Bookmark, 
-  BookmarkCheck, 
-  FileText,
-  Clock,
-  Layers,
-  Cpu,
-  ChevronRight,
+import {
+  X,
+  ExternalLink,
+  MapPin,
+  ShieldCheck,
+  CheckCircle2,
+  AlertTriangle,
   TrendingUp,
-  Tag,
-  MessageSquare
+  Sparkles,
+  RefreshCw,
+  Send,
+  Bookmark,
+  BookmarkCheck,
+  MessageSquare,
 } from 'lucide-react';
 import { Business, Opportunity, LeadStatus } from '../types.js';
 
@@ -61,11 +52,7 @@ export const BusinessProfileView: React.FC<BusinessProfileViewProps> = ({
 
   const handleAuditClick = async () => {
     setIsAuditing(true);
-    try {
-      await onRunAudit(business);
-    } finally {
-      setIsAuditing(false);
-    }
+    try { await onRunAudit(business); } finally { setIsAuditing(false); }
   };
 
   const handleExplainClick = async () => {
@@ -74,9 +61,7 @@ export const BusinessProfileView: React.FC<BusinessProfileViewProps> = ({
     try {
       const data = await onExplainOpportunity(business.id, topOpp.id);
       setAiExplanation(data);
-    } finally {
-      setIsExplaining(false);
-    }
+    } finally { setIsExplaining(false); }
   };
 
   const handleAddNoteSubmit = async (e: React.FormEvent) => {
@@ -86,421 +71,541 @@ export const BusinessProfileView: React.FC<BusinessProfileViewProps> = ({
     try {
       await onAddNote(business.id, newNoteText.trim());
       setNewNoteText('');
-    } finally {
-      setIsAddingNote(false);
-    }
+    } finally { setIsAddingNote(false); }
   };
 
+  const TABS = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'audit', label: `Technical audit${audit ? ` (${audit.deterministicHealthScore}/100)` : ''}` },
+    { id: 'opportunities', label: `Opportunities (${business.opportunities.length})` },
+    { id: 'crm', label: `Notes${isSaved ? ` (${business.savedLead?.notes.length ?? 0})` : ''}` },
+  ];
+
+  let domainDisplay = 'No website';
+  if (business.websiteUrl) {
+    try { domainDisplay = new URL(business.websiteUrl).hostname; } catch { domainDisplay = business.websiteUrl; }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col text-left overflow-hidden">
-        {/* Modal Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded">
-                Business Intelligence Dossier
+    /* ── Modal backdrop ─────────────────────────────────────────────── */
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'stretch',
+        justifyContent: 'flex-end',
+        background: 'rgba(0,0,0,0.6)',
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      {/* ── Dossier slide-in panel — THE deliberate motion moment ────── */}
+      <div
+        className="dossier-panel open"
+        style={{
+          background: 'var(--surface-1)',
+          borderLeft: '1px solid var(--border-moderate)',
+          width: '100%',
+          maxWidth: '760px',
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '100vh',
+          overflow: 'hidden',
+        }}
+      >
+
+        {/* ── Dossier header ────────────────────────────────────────── */}
+        <div
+          style={{
+            padding: '20px 24px 0',
+            borderBottom: '1px solid var(--border-subtle)',
+            flexShrink: 0,
+          }}
+        >
+          {/* Registry tag + close */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span className="signal-badge teal">
+                <ShieldCheck style={{ width: '10px', height: '10px' }} />
+                Verified Active
               </span>
-              <span className="text-xs text-slate-500">
-                Source: {business.source.license}
+              {business.source.externalId && (
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    color: 'var(--text-muted)',
+                    fontWeight: 400,
+                  }}
+                >
+                  {business.source.externalId}
+                </span>
+              )}
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                {business.source.license}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight mt-1">
-              {business.name}
-            </h1>
-            <p className="text-xs text-slate-600 mt-0.5 flex items-center gap-2">
-              <span>{business.industry} {business.subIndustry ? `(${business.subIndustry})` : ''}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-slate-400" />
-                {business.location.address || `${business.location.city}, ${business.location.country}`}
-              </span>
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => onOpenOutreach(business)}
-              className="inline-flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-xs"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Draft Outreach</span>
-            </button>
-
-            <button
-              onClick={() => onSaveLead(business.id)}
-              className={`inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition-colors ${
-                isSaved
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-              }`}
-            >
-              {isSaved ? <BookmarkCheck className="w-3.5 h-3.5 text-emerald-600" /> : <Bookmark className="w-3.5 h-3.5 text-slate-500" />}
-              <span>{isSaved ? 'Saved' : 'Save Lead'}</span>
-            </button>
-
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200/60 transition-colors"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
+                padding: '4px',
+                borderRadius: '3px',
+                flexShrink: 0,
+              }}
             >
-              <X className="w-5 h-5" />
+              <X style={{ width: '18px', height: '18px' }} />
             </button>
+          </div>
+
+          {/* Company title */}
+          <h1
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '22px',
+              fontWeight: 500,
+              color: 'var(--text-primary)',
+              marginBottom: '6px',
+              lineHeight: 1.2,
+            }}
+          >
+            {business.name}
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              {business.industry}{business.subIndustry ? ` · ${business.subIndustry}` : ''}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+              <MapPin style={{ width: '11px', height: '11px' }} />
+              {business.location.address || `${business.location.city}, ${business.location.country}`}
+            </span>
+            {business.websiteUrl && (
+              <a
+                href={business.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--teal-bright)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}
+              >
+                {domainDisplay}
+                <ExternalLink style={{ width: '10px', height: '10px' }} />
+              </a>
+            )}
+          </div>
+
+          {/* Action row */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+            <button className="btn-primary" onClick={() => onOpenOutreach(business)}>
+              <Send style={{ width: '12px', height: '12px' }} />
+              Draft outreach
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => onSaveLead(business.id)}
+              style={{ background: isSaved ? 'var(--teal-surface)' : undefined, borderColor: isSaved ? 'var(--teal-border)' : undefined, color: isSaved ? 'var(--teal-bright)' : undefined }}
+            >
+              {isSaved
+                ? <><BookmarkCheck style={{ width: '12px', height: '12px' }} /> Saved to pipeline</>
+                : <><Bookmark style={{ width: '12px', height: '12px' }} /> Save lead</>
+              }
+            </button>
+          </div>
+
+          {/* Tab nav */}
+          <div style={{ display: 'flex', gap: '0', borderTop: '1px solid var(--border-subtle)', marginLeft: '-24px', marginRight: '-24px', paddingLeft: '24px' }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{
+                  padding: '10px 16px',
+                  fontSize: '12px',
+                  fontWeight: activeTab === tab.id ? 600 : 400,
+                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: `2px solid ${activeTab === tab.id ? 'var(--amber)' : 'transparent'}`,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'color 120ms ease',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-6 border-b border-slate-200 bg-white flex space-x-6 text-xs font-semibold">
-          {[
-            { id: 'overview', label: 'Overview & Signals' },
-            { id: 'audit', label: `Technical Audit ${audit ? `(${audit.deterministicHealthScore}/100)` : ''}` },
-            { id: 'opportunities', label: `Opportunity Analysis (${business.opportunities.length})` },
-            { id: 'crm', label: `Pipeline & Notes ${isSaved ? `(${business.savedLead?.notes.length || 0})` : ''}` },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`py-3 border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-indigo-600 text-indigo-700 font-bold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* ── Scrollable body ───────────────────────────────────────── */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
 
-        {/* Scrollable Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* TAB 1: OVERVIEW */}
+          {/* TAB: OVERVIEW ─────────────────────────────────────────── */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Top Summary Card */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Contact & Registration Box */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5 text-xs">
-                  <h3 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                    Verified Commercial Record
-                  </h3>
-                  <div className="space-y-1 text-slate-600">
-                    <p><strong className="text-slate-800">Phone:</strong> {business.phone || 'Not listed in registry'}</p>
-                    <p><strong className="text-slate-800">Email:</strong> {business.email || 'Public inquiry form only'}</p>
-                    <p><strong className="text-slate-800">Registry ID:</strong> {business.source.externalId || 'RC-Commercial-Public'}</p>
-                    <p><strong className="text-slate-800">Status:</strong> Verified Active Operating Entity</p>
+              {/* Quick-facts grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="panel-elevated" style={{ padding: '16px' }}>
+                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>Contact</p>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.7, fontFamily: 'var(--font-mono)' }}>
+                    {business.phone && <div>{business.phone}</div>}
+                    {business.email && <div style={{ wordBreak: 'break-all' }}>{business.email}</div>}
+                    {!business.phone && !business.email && <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', fontStyle: 'italic' }}>No direct contact found</div>}
                   </div>
                 </div>
-
-                {/* Digital Presence Health */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5 text-xs">
-                  <h3 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-indigo-600" />
-                    Digital Footprint Status
-                  </h3>
-                  <div className="space-y-1 text-slate-600">
-                    <p><strong className="text-slate-800">Website:</strong> {business.hasWebsite ? 'Owned Domain Active' : 'No Owned Website Detected'}</p>
-                    <p><strong className="text-slate-800">Mobile Adaptation:</strong> {business.digitalPresence.mobileReadiness}</p>
-                    <p><strong className="text-slate-800">Contact Friction:</strong> {business.digitalPresence.contactFriction.toUpperCase()}</p>
-                    <p><strong className="text-slate-800">Social Footprint:</strong> {business.digitalPresence.socialChannelsCount} channels detected</p>
+                <div className="panel-elevated" style={{ padding: '16px' }}>
+                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>Digital presence</p>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                    <div>Website: <span style={{ color: business.hasWebsite ? 'var(--teal-bright)' : 'var(--amber-bright)' }}>{business.hasWebsite ? 'Active domain' : 'None detected'}</span></div>
+                    <div>Mobile: {business.digitalPresence.mobileReadiness}</div>
+                    <div>Contact friction: {business.digitalPresence.contactFriction}</div>
+                    <div>Social channels: {business.digitalPresence.socialChannelsCount}</div>
                   </div>
                 </div>
-
-                {/* Top Opportunity Qualification Score */}
-                <div className="p-4 rounded-xl border border-indigo-100 bg-indigo-50/40 space-y-2.5 text-xs">
-                  <h3 className="font-bold text-indigo-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                    Opportunity Qualification
-                  </h3>
-                  <div>
-                    <div className="flex items-baseline space-x-1.5">
-                      <span className="text-2xl font-black text-indigo-900">{topOpp?.score || 85}%</span>
-                      <span className="text-indigo-700 font-bold text-xs uppercase">Probability</span>
+                <div className="panel-elevated" style={{ padding: '16px', borderLeft: '3px solid var(--amber)' }}>
+                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px' }}>Top opportunity</p>
+                  {topOpp ? (
+                    <div>
+                      <span className="tabular-nums" style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 500, color: 'var(--amber-bright)', display: 'block', lineHeight: 1, marginBottom: '4px' }}>
+                        {topOpp.score}%
+                      </span>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{topOpp.title}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--amber)', marginBottom: '2px' }}>{topOpp.targetService}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{topOpp.confidence} confidence</div>
                     </div>
-                    <p className="text-slate-700 font-semibold mt-1">{topOpp?.title || 'Digital Modernization'}</p>
-                    <p className="text-slate-500 text-[11px] mt-0.5">Service: {topOpp?.targetService}</p>
-                  </div>
+                  ) : (
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No matched opportunity</p>
+                  )}
                 </div>
               </div>
 
-              {/* Tri-Layer Transparent Opportunity Framework */}
+              {/* ─── THE BOLD MOMENT: Tri-Layer Reasoning ────────────────
+                  This is the centrepiece of the product, designed to be
+                  unmistakably different from any SaaS card grid.          */}
               {topOpp && (
-                <div className="border border-slate-200 rounded-xl p-5 bg-white space-y-4">
-                  <div className="flex items-center justify-between">
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                     <div>
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Tri-Layer Reasoning Framework</span>
-                      <h3 className="text-base font-bold text-slate-900 mt-0.5">Why This Business Is Worth Approaching</h3>
+                      <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                        Why approach this business
+                      </h2>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        Three-layer qualification: code evidence, inferred impact, commercial case
+                      </p>
                     </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-100 text-slate-700">
-                      {topOpp.confidence.toUpperCase()} Confidence
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border-moderate)', padding: '4px 8px', borderRadius: '3px' }}>
+                      {topOpp.confidence} confidence
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    {/* Observed */}
-                    <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
-                      <span className="font-bold text-slate-900 block mb-1.5 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
-                        1. Observed (Code Facts)
-                      </span>
-                      <ul className="space-y-1.5 text-slate-600">
+                  <div
+                    className="panel"
+                    style={{ overflow: 'hidden' }}
+                  >
+                    {/* Layer 1: Observed */}
+                    <div
+                      className="triad-observed"
+                      style={{ padding: '18px 20px', borderBottom: '1px solid var(--border-subtle)' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                        <CheckCircle2 style={{ width: '13px', height: '13px', color: 'var(--text-muted)', flexShrink: 0 }} />
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                          Observed — what the code shows
+                        </span>
+                      </div>
+                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {topOpp.triad.observed.map((obs, i) => (
-                          <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-slate-400">•</span>
+                          <li key={i} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                            <span style={{ color: 'var(--border-strong)', flexShrink: 0, marginTop: '1px' }}>·</span>
                             <span>{obs}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Inferred */}
-                    <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
-                      <span className="font-bold text-slate-900 block mb-1.5 flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                        2. Inferred (Client Impact)
-                      </span>
-                      <ul className="space-y-1.5 text-slate-600">
+                    {/* Layer 2: Inferred */}
+                    <div
+                      className="triad-inferred"
+                      style={{ padding: '18px 20px', borderBottom: '1px solid var(--border-subtle)' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                        <AlertTriangle style={{ width: '13px', height: '13px', color: 'var(--amber)', flexShrink: 0 }} />
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--amber)' }}>
+                          Inferred — likely client impact
+                        </span>
+                      </div>
+                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {topOpp.triad.inferred.map((inf, i) => (
-                          <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-slate-400">•</span>
+                          <li key={i} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                            <span style={{ color: 'var(--amber-border)', flexShrink: 0, marginTop: '1px' }}>·</span>
                             <span>{inf}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* AI Commercial Interpretation */}
-                    <div className="p-3.5 rounded-lg bg-indigo-50/50 border border-indigo-100">
-                      <span className="font-bold text-indigo-950 block mb-1.5 flex items-center gap-1.5">
-                        <TrendingUp className="w-3.5 h-3.5 text-indigo-600" />
-                        3. Strategic Rationale
-                      </span>
-                      <p className="text-slate-700 leading-relaxed italic text-[11px]">
+                    {/* Layer 3: Strategic */}
+                    <div
+                      className="triad-strategic"
+                      style={{ padding: '18px 20px', borderBottom: '1px solid var(--border-subtle)' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                        <TrendingUp style={{ width: '13px', height: '13px', color: 'var(--teal-bright)', flexShrink: 0 }} />
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--teal-bright)' }}>
+                          Strategic rationale — your pitch angle
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
                         "{topOpp.triad.aiInterpretation}"
                       </p>
                     </div>
-                  </div>
 
-                  {/* Recommended Action */}
-                  <div className="p-3.5 rounded-lg bg-emerald-50/60 border border-emerald-200 text-xs flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-emerald-900 block">Recommended Commercial Pitch</span>
-                      <span className="text-emerald-800 text-[11px]">{topOpp.recommendedAction}</span>
-                    </div>
-                    <button
-                      onClick={() => onOpenOutreach(business)}
-                      className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs transition-colors shrink-0 ml-3"
+                    {/* Recommended action */}
+                    <div
+                      style={{
+                        padding: '14px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        flexWrap: 'wrap',
+                        background: 'var(--surface-2)',
+                      }}
                     >
-                      <span>Generate Pitch</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                      <div>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Recommended pitch</p>
+                        <p style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{topOpp.recommendedAction}</p>
+                      </div>
+                      <button className="btn-primary" onClick={() => onOpenOutreach(business)} style={{ flexShrink: 0 }}>
+                        <Send style={{ width: '12px', height: '12px' }} />
+                        Generate pitch
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 2: TECHNICAL AUDIT */}
+          {/* TAB: TECHNICAL AUDIT ──────────────────────────────────── */}
           {activeTab === 'audit' && (
             <div className="space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Deterministic Website Audit</h3>
-                  <p className="text-xs text-slate-500">
-                    Inspected directly via safe SSRF-protected crawler without browser simulation overhead
+                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Technical audit
+                  </h2>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Deterministic DOM crawl — no browser simulation, SSRF-protected
                   </p>
                 </div>
                 {business.hasWebsite && (
-                  <button
-                    onClick={handleAuditClick}
-                    disabled={isAuditing}
-                    className="inline-flex items-center space-x-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin' : ''}`} />
-                    <span>{isAuditing ? 'Running Safe Audit...' : 'Re-crawl URL Now'}</span>
+                  <button className="btn-secondary" onClick={handleAuditClick} disabled={isAuditing} style={{ fontSize: '12px' }}>
+                    <RefreshCw style={{ width: '12px', height: '12px', animation: isAuditing ? 'spin 1s linear infinite' : 'none' }} />
+                    {isAuditing ? 'Crawling…' : 'Re-crawl now'}
                   </button>
                 )}
               </div>
 
               {audit ? (
-                <div className="space-y-5">
-                  {/* Health Score & Key Metrics */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-                    <div className="p-3.5 rounded-lg border border-slate-200 bg-white">
-                      <span className="text-[11px] text-slate-500 font-semibold block">Technical Health</span>
-                      <span className="text-2xl font-black text-slate-900">{audit.deterministicHealthScore}/100</span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">Deterministic Index</span>
-                    </div>
-
-                    <div className="p-3.5 rounded-lg border border-slate-200 bg-white">
-                      <span className="text-[11px] text-slate-500 font-semibold block">Mobile Viewport</span>
-                      <span className={`text-base font-bold ${audit.hasViewport ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {audit.hasViewport ? 'Configured' : 'Missing (Critical)'}
-                      </span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">&lt;meta name="viewport"&gt;</span>
-                    </div>
-
-                    <div className="p-3.5 rounded-lg border border-slate-200 bg-white">
-                      <span className="text-[11px] text-slate-500 font-semibold block">Action CTAs</span>
-                      <span className="text-2xl font-black text-slate-900">{audit.ctaCount}</span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">Action buttons detected</span>
-                    </div>
-
-                    <div className="p-3.5 rounded-lg border border-slate-200 bg-white">
-                      <span className="text-[11px] text-slate-500 font-semibold block">Response Time</span>
-                      <span className="text-2xl font-black text-slate-900">{audit.responseTimeMs}ms</span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">HTTP latency</span>
-                    </div>
+                <>
+                  {/* Score strip */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Health score', value: `${audit.deterministicHealthScore}`, sub: '/100 deterministic' },
+                      { label: 'Mobile viewport', value: audit.hasViewport ? 'Present' : 'Missing!', sub: '<meta name="viewport">', critical: !audit.hasViewport },
+                      { label: 'Response time', value: `${audit.responseTimeMs}ms`, sub: 'HTTP round-trip' },
+                      { label: 'CTA buttons', value: `${audit.ctaCount}`, sub: 'Conversion triggers' },
+                    ].map((m, i) => (
+                      <div
+                        key={i}
+                        className="panel-elevated"
+                        style={{
+                          padding: '14px 16px',
+                          borderLeft: m.critical ? '3px solid var(--amber)' : '3px solid var(--border-subtle)',
+                        }}
+                      >
+                        <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 500 }}>{m.label}</p>
+                        <p className="tabular-nums" style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '20px',
+                          fontWeight: 500,
+                          color: m.critical ? 'var(--amber-bright)' : 'var(--text-primary)',
+                          lineHeight: 1,
+                          marginBottom: '4px',
+                        }}>{m.value}</p>
+                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{m.sub}</p>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Detailed Checklist Table */}
-                  <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
-                    <div className="bg-slate-50 px-4 py-2.5 font-bold text-slate-800 border-b border-slate-200">
-                      Detailed Technical Finding Breakdown
-                    </div>
-                    <div className="divide-y divide-slate-200 bg-white">
-                      <div className="p-3.5 flex items-center justify-between">
-                        <span className="font-medium text-slate-700">HTTPS Security & Encryption</span>
-                        <span className={`font-semibold ${audit.isHttps ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {audit.isHttps ? 'Valid HTTPS' : 'Insecure HTTP'}
-                        </span>
-                      </div>
-                      <div className="p-3.5 flex items-center justify-between">
-                        <span className="font-medium text-slate-700">Page Title</span>
-                        <span className="text-slate-900 font-mono text-[11px] max-w-sm truncate">
-                          {audit.pageTitle || 'Missing <title> tag'}
-                        </span>
-                      </div>
-                      <div className="p-3.5 flex items-center justify-between">
-                        <span className="font-medium text-slate-700">Meta Description</span>
-                        <span className="text-slate-900 font-mono text-[11px] max-w-sm truncate">
-                          {audit.metaDescription || 'No meta description found'}
-                        </span>
-                      </div>
-                      <div className="p-3.5 flex items-center justify-between">
-                        <span className="font-medium text-slate-700">Heading Hierarchy</span>
-                        <span className="text-slate-800">
-                          {audit.h1Count} H1 tags, {audit.h2Count} H2 tags
-                        </span>
-                      </div>
-                      <div className="p-3.5 flex items-center justify-between">
-                        <span className="font-medium text-slate-700">Detected Call-to-Actions</span>
-                        <span className="text-slate-800">
-                          {audit.detectedCtas.length ? audit.detectedCtas.join(', ') : 'None detected'}
-                        </span>
-                      </div>
-                      <div className="p-3.5 flex items-center justify-between">
-                        <span className="font-medium text-slate-700">Detected Technologies</span>
-                        <div className="flex flex-wrap gap-1 justify-end">
-                          {audit.detectedTech.length > 0 ? (
-                            audit.detectedTech.map(t => (
-                              <span key={t} className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px]">
-                                {t}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-slate-400">Custom / Unknown</span>
-                          )}
+                  {/* Detailed findings */}
+                  <div className="panel" style={{ overflow: 'hidden' }}>
+                    <p style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', background: 'var(--surface-2)' }}>
+                      Finding breakdown
+                    </p>
+                    <div>
+                      {[
+                        { label: 'HTTPS / SSL', value: audit.isHttps ? 'Valid HTTPS' : 'Insecure HTTP', pass: audit.isHttps },
+                        { label: 'Page title', value: audit.pageTitle || 'Missing <title> tag', mono: true, pass: Boolean(audit.pageTitle) },
+                        { label: 'Meta description', value: audit.metaDescription || 'None found', mono: true, pass: Boolean(audit.metaDescription) },
+                        { label: 'Heading hierarchy', value: `${audit.h1Count} H1, ${audit.h2Count} H2`, pass: audit.h1Count === 1 },
+                        { label: 'Contact page', value: audit.hasContactPage ? 'Found' : 'Not detected', pass: audit.hasContactPage },
+                        { label: 'Phone link', value: audit.hasPhoneLink ? 'Found' : 'Not detected', pass: audit.hasPhoneLink },
+                        { label: 'OpenGraph tags', value: audit.hasOpenGraph ? 'Present' : 'Missing (no social preview)', pass: audit.hasOpenGraph },
+                        { label: 'Broken links', value: `${audit.brokenLinksFound} found`, pass: audit.brokenLinksFound === 0 },
+                        { label: 'Technologies', value: audit.detectedTech.length > 0 ? audit.detectedTech.join(', ') : 'None detected / custom', mono: true, pass: true },
+                        { label: 'CTAs detected', value: audit.detectedCtas.length > 0 ? `"${audit.detectedCtas.join('", "')}"` : 'None', mono: true, pass: audit.detectedCtas.length > 0 },
+                      ].map((row, i) => (
+                        <div
+                          key={i}
+                          className="ledger-row"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', gap: '12px' }}
+                        >
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>{row.label}</span>
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              color: row.pass ? 'var(--teal-bright)' : 'var(--amber-bright)',
+                              fontFamily: row.mono ? 'var(--font-mono)' : 'var(--font-sans)',
+                              textAlign: 'right',
+                              maxWidth: '300px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {row.value}
+                          </span>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+                </>
               ) : (
-                <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
-                  <p className="font-semibold text-slate-800">No website registered for this business</p>
-                  <p className="mt-1">
-                    This business operates through physical/regional directory listings and does not own an official web portal.
-                    This represents a prime <strong>Website Creation</strong> opportunity!
-                  </p>
+                <div className="panel" style={{ padding: '40px 24px', textAlign: 'center' }}>
+                  {!business.hasWebsite ? (
+                    <>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No website to audit</p>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '360px', margin: '0 auto' }}>
+                        This business has no owned web presence — a greenfield website build is the direct opportunity.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Audit not yet run</p>
+                      <button className="btn-primary" onClick={handleAuditClick} disabled={isAuditing} style={{ margin: '0 auto' }}>
+                        Run audit now
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 3: OPPORTUNITIES */}
+          {/* TAB: OPPORTUNITIES ─────────────────────────────────────── */}
           {activeTab === 'opportunities' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Commercial Opportunity Analysis</h3>
-                  <p className="text-xs text-slate-500">Every opportunity is supported by verified evidence and benchmark data</p>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  Commercial opportunity analysis
+                </h2>
                 <button
+                  className="btn-secondary"
                   onClick={handleExplainClick}
                   disabled={isExplaining}
-                  className="inline-flex items-center space-x-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                  style={{ fontSize: '12px' }}
                 >
-                  <Sparkles className={`w-3.5 h-3.5 ${isExplaining ? 'animate-spin' : ''}`} />
-                  <span>{isExplaining ? 'Synthesizing with Gemini...' : 'Generate AI Commercial Briefing'}</span>
+                  <Sparkles style={{ width: '12px', height: '12px', animation: isExplaining ? 'spin 1s linear infinite' : 'none' }} />
+                  {isExplaining ? 'Synthesising with Gemini…' : 'Generate AI briefing'}
                 </button>
               </div>
 
-              {/* AI Briefing if generated */}
               {aiExplanation && (
-                <div className="bg-slate-900 text-white rounded-xl p-5 border border-slate-800 space-y-3 text-xs shadow-lg">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-indigo-400 font-bold uppercase tracking-wider text-[10px]">
-                      AI Commercial Strategic Dossier
-                    </span>
-                    <span className="text-slate-400 text-[10px]">Target Buyer: {aiExplanation.buyerPersona}</span>
-                  </div>
-                  <p className="text-slate-200 font-semibold">{aiExplanation.executiveSummary}</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-slate-300">
+                <div
+                  className="panel"
+                  style={{ padding: '20px', borderLeft: '3px solid var(--teal)' }}
+                >
+                  <p style={{ fontSize: '11px', color: 'var(--teal-bright)', fontWeight: 600, marginBottom: '12px' }}>
+                    AI commercial brief — Buyer: {aiExplanation.buyerPersona}
+                  </p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600, marginBottom: '12px', lineHeight: 1.5 }}>
+                    {aiExplanation.executiveSummary}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <strong className="text-white block mb-0.5">Why Buy Now Catalyst:</strong>
-                      <p className="text-[11px] leading-relaxed">{aiExplanation.whyBuyNow}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '4px' }}>Why buy now</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{aiExplanation.whyBuyNow}</p>
                     </div>
                     <div>
-                      <strong className="text-white block mb-0.5">Recommended Pitch Angle:</strong>
-                      <p className="text-[11px] leading-relaxed">{aiExplanation.recommendedPitchAngle}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '4px' }}>Pitch angle</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{aiExplanation.recommendedPitchAngle}</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Opportunities List */}
               <div className="space-y-4">
-                {business.opportunities.map((opp) => (
-                  <div key={opp.id} className="border border-slate-200 rounded-xl p-5 bg-white space-y-4">
-                    <div className="flex items-start justify-between">
+                {business.opportunities.map(opp => (
+                  <div key={opp.id} className="panel" style={{ overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        padding: '16px 20px',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        flexWrap: 'wrap',
+                        background: 'var(--surface-2)',
+                      }}
+                    >
                       <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-slate-900 text-sm">{opp.title}</span>
-                          <span className="text-[10px] font-bold uppercase bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">
-                            {opp.confidence} Confidence
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-0.5">Recommended Service: <strong>{opp.targetService}</strong></p>
+                        <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '3px' }}>{opp.title}</h3>
+                        <p style={{ fontSize: '12px', color: 'var(--amber)' }}>{opp.targetService}</p>
                       </div>
-
-                      <span className="text-lg font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded">
-                        {opp.score}%
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span
+                          className="tabular-nums"
+                          style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 500, color: 'var(--amber-bright)' }}
+                        >
+                          {opp.score}%
+                        </span>
+                        <span className={`signal-badge ${opp.confidence === 'high' ? 'teal' : 'amber'}`}>
+                          {opp.confidence}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Evidence Table */}
-                    <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
-                      <div className="bg-slate-50 px-3.5 py-2 font-bold text-slate-700 border-b border-slate-200">
-                        Supporting Evidence Items
-                      </div>
-                      <div className="divide-y divide-slate-200">
-                        {opp.evidence.map((ev, i) => (
-                          <div key={i} className="p-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <div>
-                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Signal / Metric</span>
-                              <span className="font-semibold text-slate-900">{ev.metric}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Observed Finding</span>
-                              <span className="text-slate-700">{ev.finding}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Industry Benchmark</span>
-                              <span className="text-slate-500">{ev.benchmark}</span>
-                            </div>
-                          </div>
+                    {/* Evidence table */}
+                    <div>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr 1fr',
+                          padding: '10px 16px',
+                          borderBottom: '1px solid var(--border-subtle)',
+                          background: 'var(--surface-2)',
+                        }}
+                      >
+                        {['Signal', 'Finding', 'Benchmark'].map(h => (
+                          <span key={h} style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)' }}>{h}</span>
                         ))}
                       </div>
+                      {opp.evidence.map((ev, i) => (
+                        <div
+                          key={i}
+                          className="ledger-row"
+                          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 16px', gap: '8px' }}
+                        >
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>{ev.metric}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{ev.finding}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{ev.benchmark}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -508,76 +613,90 @@ export const BusinessProfileView: React.FC<BusinessProfileViewProps> = ({
             </div>
           )}
 
-          {/* TAB 4: CRM & PIPELINE NOTES */}
+          {/* TAB: CRM / NOTES ──────────────────────────────────────── */}
           {activeTab === 'crm' && (
             <div className="space-y-5">
-              <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Lead Pipeline & Agency Notes</h3>
-                  <p className="text-xs text-slate-500">Track conversation stages and client interaction history</p>
+                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Pipeline notes
+                  </h2>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Track conversation stages and record call outcomes
+                  </p>
                 </div>
-
-                {/* Status Selector */}
                 {isSaved && (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-slate-600 font-medium">Pipeline Status:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Stage:</span>
                     <select
                       value={business.savedLead?.status || 'new'}
-                      onChange={(e) => onUpdateLeadStatus(business.id, e.target.value as LeadStatus)}
-                      className="text-xs py-1.5 px-2.5 border border-slate-300 rounded-md bg-white font-semibold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      onChange={e => onUpdateLeadStatus(business.id, e.target.value as LeadStatus)}
+                      className="field-select"
+                      style={{ width: 'auto', fontSize: '12px' }}
                     >
-                      <option value="new">New</option>
-                      <option value="researching">Researching</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="replied">Replied</option>
-                      <option value="qualified">Qualified</option>
-                      <option value="won">Won</option>
-                      <option value="not_interested">Not Interested</option>
+                      {['new', 'researching', 'contacted', 'replied', 'qualified', 'won', 'not_interested'].map(s => (
+                        <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                      ))}
                     </select>
                   </div>
                 )}
               </div>
 
-              {/* Add Note Form */}
+              {/* Add note */}
               <form onSubmit={handleAddNoteSubmit} className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Add Internal Note
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Add a note
                 </label>
                 <textarea
                   rows={3}
                   value={newNoteText}
-                  onChange={(e) => setNewNoteText(e.target.value)}
-                  placeholder="Record call outcome, contact name, or follow-up notes..."
-                  className="w-full text-xs p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                  onChange={e => setNewNoteText(e.target.value)}
+                  placeholder="Call outcome, contact name, follow-up date…"
+                  className="field-input"
+                  style={{ resize: 'vertical' }}
                 />
-                <div className="flex justify-end">
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     type="submit"
+                    className="btn-primary"
                     disabled={isAddingNote || !newNoteText.trim()}
-                    className="inline-flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                    style={{ fontSize: '12px' }}
                   >
-                    <span>Save Note</span>
+                    Save note
                   </button>
                 </div>
               </form>
 
-              {/* Notes Timeline */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Activity History</h4>
-                {business.savedLead && business.savedLead.notes.length > 0 ? (
-                  business.savedLead.notes.map((note) => (
-                    <div key={note.id} className="p-3.5 bg-white border border-slate-200 rounded-lg text-xs space-y-1">
-                      <div className="flex items-center justify-between text-slate-500 text-[11px]">
-                        <span className="font-semibold text-slate-800">{note.author}</span>
-                        <span>{new Date(note.createdAt).toLocaleString()}</span>
+              {/* Notes timeline */}
+              {business.savedLead?.notes && business.savedLead.notes.length > 0 ? (
+                <div>
+                  <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px' }}>
+                    History ({business.savedLead.notes.length})
+                  </p>
+                  <div className="space-y-3">
+                    {business.savedLead.notes.map(note => (
+                      <div
+                        key={note.id}
+                        className="panel-elevated"
+                        style={{ padding: '12px 14px' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>{note.author}</span>
+                          <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                            {new Date(note.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.55 }}>{note.text}</p>
                       </div>
-                      <p className="text-slate-700 leading-relaxed">{note.text}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 italic">No notes added yet.</p>
-                )}
-              </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
+                  <MessageSquare style={{ width: '14px', height: '14px' }} />
+                  No notes yet
+                </div>
+              )}
             </div>
           )}
         </div>

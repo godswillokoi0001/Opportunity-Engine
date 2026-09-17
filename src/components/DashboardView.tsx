@@ -1,16 +1,8 @@
 import React from 'react';
-import { 
-  Layers, 
-  Compass, 
-  Sparkles, 
-  Users, 
-  ArrowRight, 
-  Activity, 
-  Globe, 
-  CheckCircle2, 
-  AlertCircle, 
-  ChevronRight,
-  Plus
+import {
+  Globe,
+  Activity,
+  Plus,
 } from 'lucide-react';
 import { Business, Campaign, UserProfile } from '../types.js';
 
@@ -37,276 +29,407 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const activeCampaigns = campaigns.filter(c => c.status === 'active');
   const totalDiscovered = businesses.length;
-  const qualifiedOpportunities = businesses.filter(b => b.opportunities.length > 0).length;
+  const qualifiedCount = businesses.filter(b => b.opportunities.length > 0).length;
+  const qualifyRate = totalDiscovered > 0 ? Math.round((qualifiedCount / totalDiscovered) * 100) : 0;
 
-  // Recent high-confidence opportunities
-  const highConfidenceOpps = businesses
+  // Top 5 highest-scoring leads
+  const topLeads = [...businesses]
     .filter(b => b.opportunities.length > 0)
-    .slice(0, 4);
+    .sort((a, b) => (b.opportunities[0]?.score ?? 0) - (a.opportunities[0]?.score ?? 0))
+    .slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      {/* Top Banner / Welcome with Context */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">
-                Active Agency Workspace
-              </span>
-              <span className="text-xs text-slate-500 font-medium">
-                {userProfile.agencyName}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 mt-2">
-              Opportunity Command Center
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-              Targeting: <strong className="text-slate-800">{userProfile.primaryService}</strong> across <strong className="text-slate-800">{userProfile.targetLocations.join(', ')}</strong>.
-            </p>
-          </div>
+    <div className="space-y-6">
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => onNavigate('discovery')}
-              className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold px-4 py-2.5 rounded-lg border border-slate-300 transition-colors"
-            >
-              <span>View Discovered ({businesses.length})</span>
-            </button>
-            <button
-              onClick={onNewCampaign}
-              className="inline-flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-xs"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Launch Campaign</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Meaningful Metrics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Campaigns</span>
-            <Compass className="w-4 h-4 text-indigo-600" />
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-extrabold tracking-tight text-slate-900">{activeCampaigns.length}</span>
-            <span className="text-xs text-slate-500 ml-2">running</span>
-          </div>
-          <button
-            onClick={() => onNavigate('campaigns')}
-            className="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+      {/* ─── Workspace header ────────────────────────────────────────── */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: '16px',
+          paddingBottom: '20px',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '22px',
+              fontWeight: 500,
+              color: 'var(--text-primary)',
+              marginBottom: '4px',
+            }}
           >
-            <span>Manage campaigns</span>
-            <ChevronRight className="w-3 h-3" />
-          </button>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Businesses Discovered</span>
-            <Globe className="w-4 h-4 text-slate-600" />
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-extrabold tracking-tight text-slate-900">{totalDiscovered}</span>
-            <span className="text-xs text-slate-500 ml-2">records</span>
-          </div>
-          <button
-            onClick={() => onNavigate('discovery')}
-            className="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-          >
-            <span>Browse dataset</span>
-            <ChevronRight className="w-3 h-3" />
-          </button>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Qualified Opportunities</span>
-            <Sparkles className="w-4 h-4 text-amber-600" />
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-extrabold tracking-tight text-slate-900">{qualifiedOpportunities}</span>
-            <span className="text-xs text-emerald-600 font-semibold ml-2">
-              {totalDiscovered > 0 ? `${Math.round((qualifiedOpportunities / totalDiscovered) * 100)}% qualified` : '0%'}
-            </span>
-          </div>
-          <p className="mt-3 text-[11px] text-slate-500 truncate">
-            Backed by deterministic signals
+            {userProfile.agencyName}
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+            {userProfile.primaryService} · {userProfile.targetLocations.join(', ')}
           </p>
         </div>
+        <button className="btn-primary" onClick={onNewCampaign}>
+          <Plus style={{ width: '12px', height: '12px' }} />
+          New campaign
+        </button>
+      </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Saved in Pipeline</span>
-            <Users className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-extrabold tracking-tight text-slate-900">{savedLeadsCount}</span>
-            <span className="text-xs text-slate-500 ml-2">prospects</span>
-          </div>
-          <button
-            onClick={() => onNavigate('leads')}
-            className="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-          >
-            <span>Open lead pipeline</span>
-            <ChevronRight className="w-3 h-3" />
-          </button>
+      {/* ─── Telemetry ribbon — flat, not card-per-metric ────────────── */}
+      <div
+        className="panel"
+        style={{ padding: '0', overflow: 'hidden' }}
+      >
+        <div
+          className="grid grid-cols-2 sm:grid-cols-4"
+          style={{ borderBottom: '1px solid var(--border-subtle)' }}
+        >
+          {[
+            {
+              label: 'Active campaigns',
+              value: activeCampaigns.length,
+              unit: '',
+              action: () => onNavigate('campaigns'),
+              actionLabel: 'Manage',
+            },
+            {
+              label: 'Businesses found',
+              value: totalDiscovered,
+              unit: '',
+              action: () => onNavigate('discovery'),
+              actionLabel: 'Browse',
+            },
+            {
+              label: 'Qualified leads',
+              value: qualifiedCount,
+              unit: `${qualifyRate}% rate`,
+              action: () => onNavigate('discovery'),
+              actionLabel: 'View',
+            },
+            {
+              label: 'In pipeline',
+              value: savedLeadsCount,
+              unit: 'saved',
+              action: () => onNavigate('leads'),
+              actionLabel: 'Open',
+            },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              style={{
+                padding: '20px 24px',
+                borderRight: i < 3 ? '1px solid var(--border-subtle)' : 'none',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  marginBottom: '8px',
+                  textTransform: 'none',
+                  letterSpacing: 0,
+                }}
+              >
+                {stat.label}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '8px' }}>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '28px',
+                    fontWeight: 500,
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                  }}
+                >
+                  {stat.value}
+                </span>
+                {stat.unit && (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stat.unit}</span>
+                )}
+              </div>
+              <button
+                onClick={stat.action}
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--amber)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontWeight: 500,
+                }}
+              >
+                {stat.actionLabel}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Grid: Qualified Opportunities + Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left 2 Cols: High-Value Opportunities */}
+      {/* ─── Main content grid ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Highest-score leads — left 2 cols */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Highest-Probability Opportunities</h2>
-              <p className="text-xs text-slate-500">Businesses with clear, verifiable reasons to engage</p>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h2
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '17px',
+                fontWeight: 500,
+                color: 'var(--text-primary)',
+              }}
+            >
+              Highest-probability leads
+            </h2>
             <button
               onClick={() => onNavigate('discovery')}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+              style={{
+                fontSize: '12px',
+                color: 'var(--amber)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 500,
+              }}
             >
-              View all ({businesses.length})
+              All results ({businesses.length})
             </button>
           </div>
 
-          <div className="space-y-3">
-            {highConfidenceOpps.map((biz) => {
-              const topOpp = biz.opportunities[0];
-              const isSaved = Boolean(biz.savedLead);
-              return (
-                <div
-                  key={biz.id}
-                  onClick={() => onSelectBusiness(biz)}
-                  className="bg-white border border-slate-200 rounded-xl p-5 hover:border-indigo-300 hover:shadow-xs transition-all cursor-pointer group"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+          {topLeads.length === 0 ? (
+            <div
+              className="panel"
+              style={{ padding: '48px 24px', textAlign: 'center' }}
+            >
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+                No campaigns have run yet.
+              </p>
+              <button className="btn-primary" onClick={onNewCampaign}>
+                <Plus style={{ width: '12px', height: '12px' }} />
+                Start your first campaign
+              </button>
+            </div>
+          ) : (
+            <div className="panel" style={{ overflow: 'hidden' }}>
+              {topLeads.map((biz, idx) => {
+                const topOpp = biz.opportunities[0];
+                const isSaved = Boolean(biz.savedLead);
+                let domainDisplay = 'No website';
+                if (biz.websiteUrl) {
+                  try { domainDisplay = new URL(biz.websiteUrl).hostname; } catch { domainDisplay = biz.websiteUrl; }
+                }
+
+                return (
+                  <button
+                    key={biz.id}
+                    onClick={() => onSelectBusiness(biz)}
+                    className="ledger-row"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto',
+                      gap: '16px',
+                      padding: '16px 20px',
+                      width: '100%',
+                      textAlign: 'left',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      alignItems: 'center',
+                    }}
+                  >
                     <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '10px',
+                            color: 'var(--text-muted)',
+                            fontWeight: 400,
+                            minWidth: '18px',
+                          }}
+                        >
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
                           {biz.name}
                         </span>
                         {isSaved && (
-                          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded">
-                            Saved ({biz.savedLead?.status})
+                          <span className="signal-badge teal">Saved</span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                          {domainDisplay}
+                        </span>
+                        {topOpp && (
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            {topOpp.title}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-slate-500">
-                        {biz.industry} • {biz.location.city}, {biz.location.country}
-                      </span>
                     </div>
-
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded">
-                        Score: {topOpp?.score || 80}%
-                      </span>
-                      <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded">
-                        {topOpp?.targetService || 'Web Design'}
-                      </span>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      {topOpp && (
+                        <>
+                          <span
+                            className="tabular-nums"
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '20px',
+                              fontWeight: 500,
+                              color: topOpp.score >= 80 ? 'var(--amber-bright)' : 'var(--text-secondary)',
+                              display: 'block',
+                              lineHeight: 1,
+                            }}
+                          >
+                            {topOpp.score}%
+                          </span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            {topOpp.confidence} confidence
+                          </span>
+                        </>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Triad Preview */}
-                  {topOpp && (
-                    <div className="mt-3 text-xs space-y-1.5">
-                      <p className="text-slate-700 font-medium line-clamp-1">
-                        <strong className="text-slate-900">Observed:</strong> {topOpp.triad.observed[0]}
-                      </p>
-                      <p className="text-slate-500 italic text-[11px] line-clamp-2">
-                        "{topOpp.triad.aiInterpretation}"
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-slate-500 font-mono">
-                      {biz.hasWebsite ? (biz.websiteUrl ? new URL(biz.websiteUrl).hostname : 'Website present') : 'No owned website'}
-                    </span>
-                    <span className="text-indigo-600 font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                      Inspect Intelligence Report <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Right 1 Col: Active Campaigns & Activity */}
-        <div className="space-y-6">
-          {/* Active Campaigns Panel */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-900">Active Campaigns</h3>
+        {/* Right sidebar */}
+        <div className="space-y-5">
+
+          {/* Active campaigns */}
+          <div className="panel" style={{ overflow: 'hidden' }}>
+            <div
+              style={{
+                padding: '14px 16px',
+                borderBottom: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                Campaigns
+              </h3>
               <button
                 onClick={onNewCampaign}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800"
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--amber)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
               >
                 + New
               </button>
             </div>
-
-            <div className="space-y-3">
-              {campaigns.slice(0, 3).map((camp) => (
-                <div key={camp.id} className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                  <div className="flex items-center justify-between font-bold text-slate-800">
-                    <span className="truncate max-w-[160px]">{camp.name}</span>
-                    <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">Active</span>
+            {campaigns.length === 0 ? (
+              <div style={{ padding: '20px 16px', textAlign: 'center' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No campaigns yet</p>
+              </div>
+            ) : (
+              campaigns.slice(0, 3).map(camp => (
+                <div
+                  key={camp.id}
+                  className="ledger-row"
+                  style={{ padding: '12px 16px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', flex: 1, marginRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {camp.name}
+                    </span>
+                    <span className={`signal-badge ${camp.status === 'active' ? 'teal' : 'amber'}`}>
+                      {camp.status}
+                    </span>
                   </div>
-                  <p className="text-slate-500 text-[11px] mt-1">{camp.location} • {camp.industries.join(', ')}</p>
-                  <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-600">
-                    <span>{camp.discoveredCount} Discovered</span>
-                    <span className="font-semibold text-indigo-600">{camp.qualifiedCount} Qualified</span>
-                  </div>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {camp.location} · {camp.discoveredCount} found · {camp.qualifiedCount} qualified
+                  </p>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
 
-          {/* Audit / Live Crawler Quick Action */}
-          <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-5 text-white shadow-sm">
-            <div className="flex items-center space-x-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <Globe className="w-4 h-4" />
-              <span>SSRF-Safe Live Crawler</span>
+          {/* Live auditor quick-access */}
+          <div
+            className="panel"
+            style={{ padding: '16px' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Globe style={{ width: '14px', height: '14px', color: 'var(--teal-bright)' }} />
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                Live website auditor
+              </h3>
             </div>
-            <h3 className="text-sm font-bold text-white">Instant Website Audit</h3>
-            <p className="text-xs text-slate-300 mt-1 mb-4 leading-relaxed">
-              Test any public URL against our deterministic crawler to inspect viewports, CTAs, headings, and tech stack signatures.
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>
+              Paste any public URL to get an immediate technical audit — viewport, HTTPS, speed, CTAs, and tech stack.
             </p>
-            <button
-              onClick={() => onNavigate('auditor')}
-              className="w-full bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-            >
-              <span>Open Live Inspector</span>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-700" />
+            <button className="btn-secondary" onClick={() => onNavigate('auditor')} style={{ width: '100%', justifyContent: 'center', fontSize: '12px' }}>
+              Open auditor
             </button>
           </div>
 
-          {/* Recent Activity Log */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                <Activity className="w-4 h-4 text-slate-500" />
-                <span>Recent System Activity</span>
-              </h3>
+          {/* Activity log */}
+          {activityLogs.length > 0 && (
+            <div className="panel" style={{ overflow: 'hidden' }}>
+              <div
+                style={{
+                  padding: '14px 16px',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Activity style={{ width: '12px', height: '12px', color: 'var(--text-muted)' }} />
+                <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                  Activity
+                </h3>
+              </div>
+              <div style={{ padding: '8px 0' }}>
+                {activityLogs.slice(0, 5).map((log, i) => (
+                  <div
+                    key={log.id}
+                    className="timeline-item"
+                    style={{
+                      padding: '8px 16px',
+                      marginLeft: '0',
+                    }}
+                  >
+                    <div
+                      style={{
+                        paddingLeft: '16px',
+                        borderLeft: '1px solid var(--border-subtle)',
+                        marginLeft: '3px',
+                      }}
+                    >
+                      <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '2px' }}>
+                        {log.action}
+                      </p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: '2px' }}>
+                        {log.details}
+                      </p>
+                      <span
+                        className="tabular-nums"
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}
+                      >
+                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="space-y-3">
-              {activityLogs.slice(0, 4).map((log) => (
-                <div key={log.id} className="text-xs border-l-2 border-indigo-500 pl-2.5 py-0.5">
-                  <p className="font-semibold text-slate-800">{log.action}</p>
-                  <p className="text-slate-500 text-[11px] leading-tight">{log.details}</p>
-                  <span className="text-[10px] text-slate-400">
-                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
